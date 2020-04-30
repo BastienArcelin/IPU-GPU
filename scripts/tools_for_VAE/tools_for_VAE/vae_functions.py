@@ -24,7 +24,7 @@ def build_vanilla_vae(encoder, decoder, coeff_KL,full_cov=False):
     model = Model(input_vae, decoder(z))
     #vae_utils = Model(input_vae, [*encoder(input_vae), z, Dkl, decoder(z)])
 
-    return model, Dkl
+    return model, Dkl, z
 
 
 
