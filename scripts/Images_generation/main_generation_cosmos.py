@@ -43,7 +43,7 @@ elif isolated_or_blended == 'blended':
     save_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/blended_galaxies/' + case + training_or_test #blended_images#single_galaxies
     # what to call those files
     root = 'galaxies_blended_20191024_'
-    nmax_blend = 4
+    nmax_blend = 16
 else:
     raise NotImplementedError
 # Loading the COSMOS catalog
@@ -56,8 +56,11 @@ else:
     used_idx = np.arange(5000,cosmos_cat.nobjects)
 
 # keys for data objects
-keys = ['nb_blended_gal', 'SNR', 'SNR_peak', 'redshift', 'moment_sigma', 'e1', 'e2', 'mag', 'mag_ir', 'closest_x', 'closest_y', 'closest_redshift', 'closest_moment_sigma', 'closest_e1', 'closest_e2', 'closest_mag', 'closest_mag_ir', 'blendedness_total_lsst', 'blendedness_closest_lsst', 'blendedness_aperture_lsst', 'idx_closest_to_peak', 'n_peak_detected']
-#keys = ['nb_blended_gal', 'SNR', 'SNR_peak', 'redshift', 'moment_sigma', 'e1', 'e2', 'mag', 'mag_ir', 'closest_x', 'closest_y', 'closest_redshift', 'closest_moment_sigma', 'closest_e1', 'closest_e2', 'closest_mag','closest_mag_ir', 'blendedness_total_lsst', 'blendedness_aperture_lsst', 'blendedness_closest_lsst']#'blendedness_total_euclid', , 'blendedness_closest_euclid'
+keys = []
+for i in range (nmax_blend):
+    keys = keys + ['redshift_'+str(i), 'moment_sigma_'+str(i), 'e1_'+str(i), 'e2_'+str(i), 'mag_'+str(i)]
+keys = keys + ['nb_blended_gal', 'SNR', 'SNR_peak', 'mag_ir', 'closest_x', 'closest_y', 'closest_mag_ir', 'blendedness_total_lsst', 'blendedness_closest_lsst', 'idx_closest_to_peak', 'n_peak_detected']#'blendedness_aperture_lsst','closest_redshift', 'closest_moment_sigma', 'closest_e1', 'closest_e2', 'closest_mag',
+
 for icat in trange(N_files):
     # Run params
     root_i = root+nb_of_file_i#str(icat)
@@ -68,7 +71,7 @@ for icat in trange(N_files):
     df = pd.DataFrame(index=np.arange(N_per_file), columns=keys)
 
     #res = [image_generator_2(cosmos_cat_dir, training_or_test, isolated_or_blended, used_idx, nmax_blend, 100, 28.,method) for _ in range(N_per_file)]
-    res = utils.apply_ntimes(image_generator, N_per_file, (cosmos_cat_dir, training_or_test, isolated_or_blended, used_idx, nmax_blend, 100, 28., method_shift, do_peak_detection))
+    res = utils.apply_ntimes(image_generator, N_per_file, (cosmos_cat_dir, training_or_test, isolated_or_blended, used_idx, nmax_blend, 3, 50, method_shift, do_peak_detection))
     for i in trange(N_per_file):
         # if training_or_test == 'test':
         gal_noiseless, blend_noisy, data, shift = res[i]

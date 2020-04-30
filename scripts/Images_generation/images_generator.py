@@ -54,17 +54,13 @@ def get_data(gal, gal_image, psf_image, param_or_real='param'):
         mag = np.nan
     if res.error_message == "":
         if shear_est != 'KSB':
-            return [gal.SED.redshift, res.moments_sigma, res.corrected_e1, res.corrected_e2, mag] #, res.observed_shape.e1, res.observed_shape.e2]
+            return [gal.SED.redshift, res.moments_sigma, res.corrected_e1, res.corrected_e2, mag]
         else:
-            return [gal.SED.redshift, res.moments_sigma, res.corrected_g1, res.corrected_g2, mag] #, res.observed_shape.e1, res.observed_shape.e2]
+            return [gal.SED.redshift, res.moments_sigma, res.corrected_g1, res.corrected_g2, mag]
     else:
         return [gal.SED.redshift, np.nan, np.nan, np.nan, mag]
     # return [gal.SED.redshift, res.moments_sigma, res.observed_shape.e1, res.observed_shape.e2] #this is wrong!
 
-
-# shift_method='uniform'
-#shift_method='lognorm_rad'
-# shift_method='annulus'
 
 def shift_gal(gal, method='uniform', shift_x0=0., shift_y0=0., max_dx=0.1, min_r = 0.65/2., max_r = 2.):
     """
@@ -172,6 +168,8 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
     assert isolated_or_blended in ['blended', 'isolated']
     
     while counter < max_try:
+        #print('max_try = '+str(counter), str(max_try))
+        counter += 1
         try:
             ############## GENERATION OF THE GALAXIES ##################
             ud = galsim.UniformDeviate()
@@ -185,6 +183,7 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
             mag_ir=[]
             j = 0
             while j < nb_blended_gal:
+                #print(j, nb_blended_gal)
             # for j in range (nb_blended_gal):
                 if used_idx is not None:
                     idx = np.random.choice(used_idx)
@@ -192,13 +191,18 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
                     idx = np.random.randint(cosmos_cat.nobject)
                 #data['index']=idx
                 gal = cosmos_cat.makeGalaxy(idx, gal_type='parametric', chromatic=True, noise_pad_size=0)
-                _mag_temp = gal.calculateMagnitude(filters['r'].withZeropoint(28.13))
+                _mag_temp = gal.calculateMagnitude(filters['r'].withZeropoint(28.13)
                 # Magnitude cut
                 if _mag_temp < mag_cut:
-                    gal = gal.rotate(ud() * 360. * galsim.degrees)
-                    galaxies.append(gal)
-                    mag.append(_mag_temp)
-                    mag_ir.append(gal.calculateMagnitude(filters['H'].withZeropoint(24.92-22.35*coeff_noise_h)))
+                    if j == 0:
+                        mag_max = _mag_temp
+                        gal = gal.rotate(ud() * 360. * galsim.degrees)
+                        galaxies.append(gal)
+                        mag.append(_mag_temp)
+                        mag_ir.append(gal.calculateMagnitude(filters['H'].withZeropoint(24.92-22.35*coeff_noise_h)))
+                    else:
+                        if _mag_temp > mag_max:
+                            
                     j += 1
 
             # Optionally, find the brightest and put it first in the list
@@ -207,13 +211,35 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
                 galaxies.insert(0, galaxies.pop(_idx))
                 mag.insert(0,mag.pop(_idx))
                 mag_ir.insert(0,mag_ir.pop(_idx))
+                
+                _idx_2 = np.argmin(mag)
+                galaxies.insert(0, galaxies.pop(_idx_2))
+                mag.insert(0,mag.pop(_idx_2))
+                mag_ir.insert(0,mag_ir.pop(_idx_2))
+            
+            # Compute ellipticities and magnitude for galaxies in r band before the shifting.
+            psf_image = PSF[6].drawImage(nx=max_stamp_size, ny=max_stamp_size, scale=pixel_scale[6])
+            images = []
+            galaxies_psf = [galsim.Convolve([gal*coeff_exp[6], PSF[6]]) for gal in galaxies]
+            for j, gal in enumerate(galaxies_psf):
+                temp_img = galsim.ImageF(max_stamp_size, max_stamp_size, scale=pixel_scale[6])
+
+                gal.drawImage(filters['r'], image=temp_img)
+                images.append(temp_img)
+            #print('OK bande R')
+            for z in range (nb_blended_gal):
+                data['redshift_'+str(z)], data['moment_sigma_'+str(z)], data['e1_'+str(z)], data['e2_'+str(z)], data['mag_'+str(z)] = get_data(galaxies[z], images[z], psf_image)
+            if nb_blended_gal < 4:
+                for z in range (nb_blended_gal,4):
+                    data['redshift_'+str(z)], data['moment_sigma_'+str(z)], data['e1_'+str(z)], data['e2_'+str(z)], data['mag_'+str(z)] = 10., 10., 10., 10., 10.
+
 
             # Draw shifts for other galaxies (shift has the same shape to make it simpler to save as numpy array)
             shift = np.zeros((nmax_blend,2))
-            # Shift centered
-            galaxies[0], shift[0] = shift_gal(galaxies[0], method=method_first_shift, max_dx=0.1)
+            # Shift galaxies
+            galaxies[0], shift[0] = shift_gal(galaxies[0], method=method_first_shift, max_dx=3.2)
             for j,gal in enumerate(galaxies[1:]):
-                galaxies[j+1], shift[j+1] = shift_gal(gal, shift_x0=shift[0,0], shift_y0=shift[0,1], min_r=0.65/2., max_r=1.5, method='annulus')
+                galaxies[j+1], shift[j+1] = shift_gal(gal, method=method_first_shift, max_dx=3.2)
             
             if nb_blended_gal>1:
                 distances = [shift[j][0]**2+shift[j][1]**2 for j in range(1,nb_blended_gal)]
@@ -224,6 +250,7 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
             galaxy_noiseless = np.zeros((10,max_stamp_size,max_stamp_size))
             blend_noisy = np.zeros((10,max_stamp_size,max_stamp_size))
 
+            # Doing peak detection if required
             if do_peak_detection:
                 band = 6
                 galaxies_psf = [galsim.Convolve([gal*coeff_exp[band], PSF[band]]) for gal in galaxies]
@@ -253,15 +280,8 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
                 galaxy_noiseless[i] = images[idx_closest_to_peak].array.data
                 blend_noisy[i] = blend_img.array.data
 
-                # get data for the test sample (LSST stuff)
-                #if training_or_test == 'test' and filter_name == 'r':
-                # need psf to compute ellipticities
-                psf_image = PSF[i].drawImage(nx=max_stamp_size, ny=max_stamp_size, scale=pixel_scale[i])
-                data['redshift'], data['moment_sigma'], data['e1'], data['e2'], data['mag'] = get_data(galaxies[idx_closest_to_peak], images[idx_closest_to_peak], psf_image)
-
                 # Compute data and blendedness
                 if nb_blended_gal > 1:
-                    data['closest_redshift'], data['closest_moment_sigma'], data['closest_e1'], data['closest_e2'], data['closest_mag'] = get_data(galaxies[idx_closest_to_peak_galaxy], images[idx_closest_to_peak_galaxy], psf_image)
                     img_central = images[idx_closest_to_peak].array
                     img_others = np.zeros_like(img_central)
                     for _h, image in enumerate(images):
@@ -271,39 +291,31 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
                     img_closest_neighbour =images[idx_closest_to_peak_galaxy].array# np.array(images[idx_closest_to_peak_galaxy].array.data)
                     data['blendedness_total_lsst'] = utils.compute_blendedness_total(img_central, img_others)
                     data['blendedness_closest_lsst'] = utils.compute_blendedness_single(img_central, img_closest_neighbour)
-                    data['blendedness_aperture_lsst'] = utils.compute_blendedness_aperture(img_central, img_others, data['moment_sigma'])
+                    #data['blendedness_aperture_lsst'] = utils.compute_blendedness_aperture(img_central, img_others, data['moment_sigma_0'])
                 else:
-                    data['closest_redshift'] = np.nan
-                    data['closest_moment_sigma'] = np.nan
-                    data['closest_e1'] = np.nan
-                    data['closest_e2'] = np.nan
-                    data['closest_mag'] = np.nan
                     data['blendedness_total_lsst'] = np.nan
                     data['blendedness_closest_lsst'] = np.nan
-                    data['blendedness_aperture_lsst'] = np.nan
+                    #data['blendedness_aperture_lsst'] = np.nan
             break
 
         except RuntimeError as e:
             print(e)
-
+    
+    
     # For training/validation, return normalized images only
     # if training_or_test in ['training', 'validation']:
     #     galaxy_noiseless = utils.norm(galaxy_noiseless[None,:], bands=range(10), n_years=n_years)[0]
     #     blend_noisy = utils.norm(blend_noisy[None,:], bands=range(10), n_years=n_years)[0]
     #     return galaxy_noiseless, blend_noisy
 
-    # For testing, return unormalized images and data
-    #elif training_or_test == 'test':
+    # return unormalized images and data
     data['nb_blended_gal'] = nb_blended_gal
-    data['mag'] = mag[0]
     data['mag_ir'] = mag_ir[0]
     if nb_blended_gal>1:
-        data['closest_mag'] = mag[idx_closest_to_peak_galaxy]
         data['closest_mag_ir'] = mag_ir[idx_closest_to_peak_galaxy]
         data['closest_x'] = shift[idx_closest_to_peak_galaxy][0]
         data['closest_y'] = shift[idx_closest_to_peak_galaxy][1]
     else:
-        data['closest_mag'] = np.nan
         data['closest_mag_ir'] = np.nan
         data['closest_x'] = np.nan
         data['closest_y'] = np.nan
@@ -311,9 +323,21 @@ def image_generator(cosmos_cat_dir, training_or_test, isolated_or_blended, used_
     data['n_peak_detected'] = n_peak
     data['SNR'] = utils.SNR(galaxy_noiseless, sky_level_pixel, band=6)[1]
     data['SNR_peak'] = utils.SNR_peak(galaxy_noiseless, sky_level_pixel, band=6)[1]
+
     return galaxy_noiseless, blend_noisy, data, shift
-    #else:
-    #    raise ValueError
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def image_generator_real(cosmos_cat_dir, training_or_test, isolated_or_blended, used_idx=None, nmax_blend=4, max_try=3, mag_cut=28., method_first_shift='noshift', do_peak_detection=True):
     """
