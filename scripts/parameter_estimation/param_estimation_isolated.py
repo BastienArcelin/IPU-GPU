@@ -142,11 +142,11 @@ latest = tf.train.latest_checkpoint(loading_path)
 net.load_weights(latest)
 
 ######## Train the network
-hist = net.fit_generator(test_generator, epochs=500, # training
+hist = net.fit_generator(training_generator, epochs=500, # training
           steps_per_epoch=steps_per_epoch,#128
           verbose=1,
           shuffle=True,
-          validation_data=test_generator, # validation
+          validation_data=validation_generator, # validation
           validation_steps=validation_steps,#16
           workers=0,#4 
           use_multiprocessing = True)

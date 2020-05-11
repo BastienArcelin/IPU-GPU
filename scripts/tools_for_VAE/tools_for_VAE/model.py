@@ -166,13 +166,21 @@ def create_model_wo_ls_multi(input_shape, latent_dim, hidden_dim, filters, kerne
     h = BatchNormalization()(input_layer)
     for i in range(len(filters)):
         h = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h_1 = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h = PReLU()(h_1)
+        #h = h_1 + Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h = PReLU()(h_2)
+        #h = h_2 + Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
         h = PReLU()(h)
         h = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same', strides=(2,2))(h)
         h = PReLU()(h)
     h = Flatten()(h)
-
+    #h = PReLU()(h)
+    #h = Dense(256)(h)
+    #h = PReLU()(h)
     h = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
                                     activation=None)(h)
+    #h = PReLU()(h)
     h = tfp.layers.MultivariateNormalTriL(final_dim)(h)
 
     # h_1 = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
@@ -189,6 +197,47 @@ def create_model_wo_ls_multi(input_shape, latent_dim, hidden_dim, filters, kerne
     model = Model(input_layer, h)
     return model
 
+def create_model_wo_ls_multi_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None):
+    tfd = tfp.distributions
+    prior = tfd.Independent(tfd.Normal(loc=tf.zeros(latent_dim), scale=1),
+                            reinterpreted_batch_ndims=1)
+
+    input_layer = Input(shape=(input_shape)) 
+
+    # Encoding part
+    h = BatchNormalization()(input_layer)
+    for i in range(len(filters)):
+        h = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h_1 = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h = PReLU()(h_1)
+        #h = h_1 + Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        #h = PReLU()(h_2)
+        #h = h_2 + Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same')(h)
+        h = PReLU()(h)
+        h = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same', strides=(2,2))(h)
+        h = PReLU()(h)
+    h = Flatten()(h)
+    #h = PReLU()(h)
+    #h = Dense(256)(h)
+    #h = PReLU()(h)
+    #h = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
+    #                               activation=None)(h)
+    #h = PReLU()(h)
+    #h = tfp.layers.MultivariateNormalTriL(final_dim)(h)
+
+    h_1 = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
+                                    activation=None)(h)
+    h_1 = tfp.layers.MultivariateNormalTriL(final_dim)(h_1)
+    h_2 = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
+                                    activation=None)(h)
+    h_2 = tfp.layers.MultivariateNormalTriL(final_dim)(h_2)
+    h_3 = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
+                                    activation=None)(h)
+    h_3 = tfp.layers.MultivariateNormalTriL(final_dim)(h_3)
+
+    model = Model(input_layer,[h_1,h_2,h_3])
+    #model = Model(input_layer, h)
+    return model
 
 
 

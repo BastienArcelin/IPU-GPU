@@ -31,8 +31,8 @@ input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
 latent_dim = 32
 final_dim = 9
-filters = [32, 64, 128, 256]#, 512]
-kernels = [3,3,3,3]#,3]
+filters = [32, 64]#, 128]#, 256]#, 512]
+kernels = [3,3]#,3]#,3]#,3]
 
 conv_activation = None
 dense_activation = None
@@ -123,23 +123,37 @@ if model_choice == 'full_prob':
     negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x) + kl *(10/(batch_size*steps_per_epoch)-1)
 
 else:
+    def loss(x, dists):
+        mse = tf.keras.losses.MeanSquaredError()
+        loss = 0
+        print(dists.shape, x.shape)
+        # for i in range(final_dim):
+        #     loss += mse(dists[:,i], x[:,i])
+        for i in range(final_dim):
+
+            a = tf.numpy_function(numpy_fcn, [tf.ones([100], tf.float32), tf.convert_to_tensor(x[:,i])], tf.float32)
+            loss += tf.reduce_mean(a*tf.math.squared_difference(dists.mean()[:,i], x[:,i]))#mse(a*dists[:,i], x[:,i])
+    
+        return loss
+
     negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
 
 
 
 
-net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-4), 
-              loss=negative_log_likelihood , metrics = ['mse', 'acc'], experimental_run_tf_function=False)
+
+net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
+              loss=loss , metrics = ['mse', 'acc'], experimental_run_tf_function=False)
 
 
-loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3/loss/'#blended_multi_3
+loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/loss/'#blended_multi_3
 latest = tf.train.latest_checkpoint(loading_path)
 net.load_weights(latest)
 
 
 
 # Callbacks
-saving_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3/'
+saving_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/'
 checkpointer_mse = tf.keras.callbacks.ModelCheckpoint(filepath=saving_path+'mse/weights_noisy_v4.{epoch:02d}-{val_mse:.2f}.ckpt', monitor='val_mse', verbose=1, save_best_only=True,save_weights_only=True, mode='min', period=1)
 checkpointer_loss = tf.keras.callbacks.ModelCheckpoint(filepath=saving_path+'loss/weights_noisy_v4.{epoch:02d}-{val_loss:.2f}.ckpt', monitor='val_loss', verbose=1, save_best_only=True,save_weights_only=True, mode='min', period=1)
 checkpointer_acc = tf.keras.callbacks.ModelCheckpoint(filepath=saving_path+'acc/weights_noisy_v4.{epoch:02d}-{val_acc:.2f}.ckpt', monitor='val_acc', verbose=1, save_best_only=True,save_weights_only=True, mode='max', period=1)
@@ -148,7 +162,7 @@ callbacks = [checkpointer_mse, checkpointer_loss, checkpointer_acc]
 
 
 ######## Train the network
-hist = net.fit_generator(training_generator, epochs=500, # training
+hist = net.fit_generator(training_generator, epochs=200, # training
           steps_per_epoch=steps_per_epoch,#128
           verbose=1,
           shuffle=True,
@@ -158,13 +172,13 @@ hist = net.fit_generator(training_generator, epochs=500, # training
           workers=0,#4 
           use_multiprocessing = True)
 
-saving_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3/'#blended_multi_3
+saving_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/'#blended_multi_3
 net.save_weights(saving_path+'cp-{epoch:04d}.ckpt')
 # 2 galaxies dans /weights/blended_multi/
 
 
 ## Plots
-loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3/loss/'#blended_multi_3
+loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/loss/'#blended_multi_3
 latest = tf.train.latest_checkpoint(loading_path)
 net.load_weights(latest)
 
@@ -231,23 +245,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
@@ -256,7 +270,7 @@ axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5.5)
 axes[2].set_title('$z$')
 
 fig.savefig('test_train.png')
@@ -267,23 +281,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3], '.', label = 'mean')
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3]+ 2*out.stddev().numpy()[:,3], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3]- 2*out.stddev().numpy()[:,3], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4], '.', label = 'mean')
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4]+ 2*out.stddev().numpy()[:,4], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4]- 2*out.stddev().numpy()[:,4], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,5], out.mean().numpy()[:,5], '.', label = 'mean')
@@ -292,7 +306,7 @@ axes[2].plot(training_labels[:,5], out.mean().numpy()[:,5]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5.5)
 axes[2].set_title('$z$')
 fig.savefig('test_train_2.png')
 
@@ -302,23 +316,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6], '.', label = 'mean')
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6]+ 2*out.stddev().numpy()[:,6], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6]- 2*out.stddev().numpy()[:,6], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7], '.', label = 'mean')
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7]+ 2*out.stddev().numpy()[:,7], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7]- 2*out.stddev().numpy()[:,7], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(-1,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(-1,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,8], out.mean().numpy()[:,8], '.', label = 'mean')
@@ -327,7 +341,7 @@ axes[2].plot(training_labels[:,8], out.mean().numpy()[:,8]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5.5)
 axes[2].set_title('$z$')
 fig.savefig('test_train_3.png')
 
