@@ -100,7 +100,7 @@ PSF = [PSF_euclid_nir]*3 + [PSF_euclid_vis] + [PSF_lsst]*6
 
 #################### EXPOSURE AND LUMISOITY ###################
 # The luminosity is multiplied by the ratio of the noise in the LSST R band and the assumed cosmos noise             
-coeff_exp_euclid =  (1800. * ((1.25)**2 - (0.37)**2)/((2.4**2)*(1.-0.33**2))) * N_exposures_euclid
+coeff_exp_euclid =  (450. * ((1.25)**2 - (0.37)**2)/((2.4**2)*(1.-0.33**2))) * N_exposures_euclid
 coeff_exp_lsst =  (15. * (6.68**2)/((2.4**2)*(1.-0.33**2))) * N_exposures_lsst
 coeff_exp = [coeff_exp_euclid]*4 + [coeff_exp_lsst]*6
 
