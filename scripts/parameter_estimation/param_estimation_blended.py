@@ -148,7 +148,7 @@ callbacks = [checkpointer_mse, checkpointer_loss, checkpointer_acc]
 
 
 ######## Train the network
-hist = net.fit_generator(training_generator, epochs=500, # training
+hist = net.fit_generator(training_generator, epochs=50, # training
           steps_per_epoch=steps_per_epoch,#128
           verbose=1,
           shuffle=True,

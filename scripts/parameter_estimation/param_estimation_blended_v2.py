@@ -31,8 +31,8 @@ input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
 latent_dim = 32
 final_dim = 9
-filters = [32, 64]#, 128]#, 256]#, 512]
-kernels = [3,3]#,3]#,3]#,3]
+filters = [32, 64, 128, 256]#, 512]
+kernels = [3,3,3,3]#,3]
 
 conv_activation = None
 dense_activation = None
@@ -44,32 +44,6 @@ bands = [4,5,6,7,8,9]
 
 
 #### Loading data
-# Direct loading
-# data = np.load('/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered/training/galaxies_isolated_20191024_0_images.npy', mmap_mode = 'c')
-# labels = pd.read_csv('/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered/training/galaxies_isolated_20191024_0_data.csv')
-
-# temp_labels = labels[(np.abs(labels['e1'])<=1.) & (np.abs(labels['e2'])<=1)]
-# e1 = np.exp(np.array(temp_labels['e1']))*2
-# e2 = np.exp(np.array(temp_labels['e2']))*2
-# z = np.array(temp_labels['redshift'])
-
-# new_labels = np.zeros((len(e1),final_dim))
-# new_labels[:,0] = e1
-# new_labels[:,1] = e2
-# new_labels[:,2] = z
-# print(new_labels.shape)
-# #new_labels = np.array(new_labels['e1'])
-
-# training_data = data[:2000,1,4:]
-# training_data = np.transpose(training_data, axes = (0,2,3,1))
-# validation_data = data[2000:2500,1,4:]
-# validation_data = np.transpose(validation_data, axes = (0,2,3,1))
-
-# training_labels = new_labels[:2000]
-# validation_labels = new_labels[2000:2500]
-
-
-
 # With generator
 images_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/blended_galaxies/random/'
 
@@ -112,6 +86,11 @@ if model_choice == 'full_prob':
 net.summary()
 
 #### Loss definition
+def numpy_fcn(x,y):
+    x[y==0]=0
+    return x
+
+
 if model_choice == 'full_prob':
     kl = sum(net.losses)
     def loss(x, dists):
@@ -146,9 +125,9 @@ net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3),
               loss=loss , metrics = ['mse', 'acc'], experimental_run_tf_function=False)
 
 
-loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/loss/'#blended_multi_3
-latest = tf.train.latest_checkpoint(loading_path)
-net.load_weights(latest)
+#loading_path = '/sps/lsst/users/barcelin/TFP/weights/blended_multi_3_2/loss/'#blended_multi_3
+#latest = tf.train.latest_checkpoint(loading_path)
+#net.load_weights(latest)
 
 
 
