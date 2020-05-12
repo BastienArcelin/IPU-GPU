@@ -200,6 +200,8 @@ class BatchGenerator_multi_galaxies(tensorflow.keras.utils.Sequence):
 
         new_data = data[(np.abs(data['e1_0'])<=1.) &
                         (np.abs(data['e2_0'])<=1)]
+        new_data = new_data.dropna(axis = 1, how = 'all')
+        new_data = new_data.replace([np.inf, -np.inf], np.nan).dropna(axis = 1, how = 'all')
 
         if self.list_of_weights_e == None:
             indices = np.random.choice(new_data.index, size=self.batch_size, replace=False)
@@ -246,14 +248,14 @@ class BatchGenerator_multi_galaxies(tensorflow.keras.utils.Sequence):
         #         y[j,2] = 0
         #         y[j,3] = 0
 
-        y[:,0] = np.exp(np.array(new_data['e1_0'][indices]))/3#np.array(new_data['e1_0'][indices])
-        y[:,1] = np.exp(np.array(new_data['e2_0'][indices]))/3#np.array(new_data['e2_0'][indices])
+        y[:,0] = np.exp(np.array(new_data['e1_0'][indices]))#np.array(new_data['e1_0'][indices])
+        y[:,1] = np.exp(np.array(new_data['e2_0'][indices]))#np.array(new_data['e2_0'][indices])
         y[:,2] = np.array(new_data['redshift_0'][indices])
-        y[:,3] = np.exp(np.array(new_data['e1_1'][indices]))/3#np.array(new_data['e1_1'][indices])
-        y[:,4] = np.exp(np.array(new_data['e2_1'][indices]))/3#np.array(new_data['e2_1'][indices])
+        y[:,3] = np.exp(np.array(new_data['e1_1'][indices]))#np.array(new_data['e1_1'][indices])
+        y[:,4] = np.exp(np.array(new_data['e2_1'][indices]))#np.array(new_data['e2_1'][indices])
         y[:,5] = np.array(new_data['redshift_1'][indices])
-        y[:,6] = np.exp(np.array(new_data['e1_2'][indices]))/3#np.array(new_data['e1_2'][indices])
-        y[:,7] = np.exp(np.array(new_data['e2_2'][indices]))/3#np.array(new_data['e2_2'][indices])
+        y[:,6] = np.exp(np.array(new_data['e1_2'][indices]))#np.array(new_data['e1_2'][indices])
+        y[:,7] = np.exp(np.array(new_data['e2_2'][indices]))#np.array(new_data['e2_2'][indices])
         y[:,8] = np.array(new_data['redshift_2'][indices])
 
         # y[:,9] = np.array(new_data['e1_3'][indices])
@@ -273,9 +275,9 @@ class BatchGenerator_multi_galaxies(tensorflow.keras.utils.Sequence):
         y[np.isnan(y)]=0
         y[y==30]=0
         y[y==10]=0
-        y[y==np.exp(np.array(30))/3]=0#y[y==np.exp(np.array(30))*2]=0
-        y[y==np.exp(np.array(10))/3]=0#y[y==np.exp(np.array(10))*2]=0
-        y[y==1/3]=0#y[y==2]=0
+        y[y==np.exp(np.array(30))]=0#y[y==np.exp(np.array(30))*2]=0
+        y[y==np.exp(np.array(10))]=0#y[y==np.exp(np.array(10))*2]=0
+        y[y==1]=0#y[y==2]=0
 
         # # Preprocessing of the data to be easier for the network to learn
         # if self.do_norm:
