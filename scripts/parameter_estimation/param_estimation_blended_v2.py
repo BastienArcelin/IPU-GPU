@@ -121,7 +121,7 @@ else:
 
 
 
-net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
+net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-4), 
               loss=loss , metrics = ['mse', 'acc'], experimental_run_tf_function=False)
 
 
@@ -141,7 +141,7 @@ callbacks = [checkpointer_mse, checkpointer_loss, checkpointer_acc]
 
 
 ######## Train the network
-hist = net.fit_generator(training_generator, epochs=200, # training
+hist = net.fit_generator(training_generator, epochs=100, # training
           steps_per_epoch=steps_per_epoch,#128
           verbose=1,
           shuffle=True,

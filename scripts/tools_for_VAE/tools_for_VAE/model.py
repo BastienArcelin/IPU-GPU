@@ -175,12 +175,9 @@ def create_model_wo_ls_multi(input_shape, latent_dim, hidden_dim, filters, kerne
         h = Conv2D(filters[i], (kernels[i],kernels[i]), activation=conv_activation, padding='same', strides=(2,2))(h)
         h = PReLU()(h)
     h = Flatten()(h)
-    #h = PReLU()(h)
-    #h = Dense(256)(h)
-    #h = PReLU()(h)
     h = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
                                     activation=None)(h)
-    #h = PReLU()(h)
+
     h = tfp.layers.MultivariateNormalTriL(final_dim)(h)
 
     # h_1 = Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), 
