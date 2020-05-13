@@ -25,7 +25,7 @@ from tensorflow.keras import backend as K
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 100 
+batch_size = 128
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -148,7 +148,7 @@ callbacks = [checkpointer_mse, checkpointer_loss, checkpointer_acc]
 
 
 ######## Train the network
-hist = net.fit_generator(training_generator, epochs=50, # training
+hist = net.fit_generator(training_generator, epochs=20, # training
           steps_per_epoch=steps_per_epoch,#128
           verbose=1,
           shuffle=True,
@@ -231,23 +231,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(0,1)
+axes[0].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(0,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
@@ -256,7 +256,7 @@ axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5)
 axes[2].set_title('$z$')
 
 fig.savefig('test_train.png')
@@ -267,23 +267,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3], '.', label = 'mean')
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3]+ 2*out.stddev().numpy()[:,3], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,3], out.mean().numpy()[:,3]- 2*out.stddev().numpy()[:,3], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(0,1)
+axes[0].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4], '.', label = 'mean')
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4]+ 2*out.stddev().numpy()[:,4], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,4], out.mean().numpy()[:,4]- 2*out.stddev().numpy()[:,4], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(0,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,5], out.mean().numpy()[:,5], '.', label = 'mean')
@@ -292,7 +292,7 @@ axes[2].plot(training_labels[:,5], out.mean().numpy()[:,5]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5)
 axes[2].set_title('$z$')
 fig.savefig('test_train_2.png')
 
@@ -302,23 +302,23 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6], '.', label = 'mean')
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6]+ 2*out.stddev().numpy()[:,6], '+', label = 'mean + 2stddev')
 axes[0].plot(training_labels[:,6], out.mean().numpy()[:,6]- 2*out.stddev().numpy()[:,6], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[0].plot(x, x)
 axes[0].legend()
-axes[0].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[0].set_ylim(0,1)
+axes[0].set_ylim(0,5)
 axes[0].set_title('$e1$')
 
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7], '.', label = 'mean')
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7]+ 2*out.stddev().numpy()[:,7], '+', label = 'mean + 2stddev')
 axes[1].plot(training_labels[:,7], out.mean().numpy()[:,7]- 2*out.stddev().numpy()[:,7], '+', label = 'mean - 2stddev')
-x = np.linspace(0,1)
-#x = np.linspace(0,5)
+#x = np.linspace(0,1)
+x = np.linspace(0,5)
 axes[1].plot(x, x)
 axes[1].legend()
-axes[1].set_ylim(0,1)
-#axes[1].set_ylim(0,5)
+#axes[1].set_ylim(0,1)
+axes[1].set_ylim(0,5)
 axes[1].set_title('$e2$')
 
 axes[2].plot(training_labels[:,8], out.mean().numpy()[:,8], '.', label = 'mean')
@@ -327,7 +327,7 @@ axes[2].plot(training_labels[:,8], out.mean().numpy()[:,8]- 2*out.stddev().numpy
 x = np.linspace(0,4)
 axes[2].plot(x, x)
 axes[2].legend()
-axes[2].set_ylim(-1,1.5)
+axes[2].set_ylim(-1,5)
 axes[2].set_title('$z$')
 fig.savefig('test_train_3.png')
 
