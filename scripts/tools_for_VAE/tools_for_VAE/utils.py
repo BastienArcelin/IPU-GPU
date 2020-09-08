@@ -4,7 +4,7 @@ import tensorflow.keras
 import sys
 import os
 import logging
-import galsim
+#import galsim
 import random
 import cmath as cm
 import math

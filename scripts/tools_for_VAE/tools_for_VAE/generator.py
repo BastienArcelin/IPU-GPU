@@ -9,17 +9,19 @@ import tensorflow.keras
 import pandas as pd
 import scipy
 from scipy.stats import norm
+import tensorflow as tf 
 
 from random import choice
 
 sys.path.insert(0,'../tools_for_VAE/')
 from tools_for_VAE import utils
 
-
+#@tf.function
 class BatchGenerator(tensorflow.keras.utils.Sequence):
     """
     Class to create batch generator for the LSST VAE.
     """
+    #@tf.function
     def __init__(self, bands, list_of_samples,total_sample_size, batch_size, trainval_or_test, do_norm,denorm, list_of_weights_e):
         """
         Initialization function
@@ -57,7 +59,6 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
 
         self.produced_samples = 0
         self.list_of_weights_e = list_of_weights_e
-        #self.shifts = shifts
 
     def __len__(self):
         """
@@ -72,37 +73,33 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
         # indices = 0
         #print("Produced samples", self.produced_samples)
         self.produced_samples = 0
-        
+    #@tf.function
     def __getitem__(self, idx):
         """
         Function which returns the input and target batches for the network
         """
-        # If the generator is a training generator, the whole sample is displayed
-        #sample_filename = np.random.choice(self.list_of_samples, p=self.p)
-        #index = np.random.choice(1)
         index = np.random.choice(list(range(len(self.p))), p=self.p)
         sample_filename = self.list_of_samples[index]
+        filename = 'galaxies_blended_20191024_0_images.npy'
         sample = np.load(sample_filename, mmap_mode = 'c')
-        data = pd.read_csv(sample_filename.replace('images.npy','data.csv'))
+        data = pd.read_csv(sample_filename.replace('images.npy','data_classified.csv'))
 
-        new_data = data[(np.abs(data['e1'])<=1.) &
-                        (np.abs(data['e2'])<=1) ]
+        new_data = data[(np.abs(data['e1_0'])<=1.) &
+                        (np.abs(data['e2_0'])<=1) ]
 
         if self.list_of_weights_e == None:
             indices = np.random.choice(new_data.index, size=self.batch_size, replace=False)
         else:
             self.weights_e = np.load(self.list_of_weights_e[index])
             indices = np.random.choice(new_data.index, size=self.batch_size, replace=False, p = self.weights_e/np.sum(self.weights_e))
-            #print(indices)
         self.produced_samples += len(indices)
 
         x = sample[indices,1][:,self.bands]
-        #print(x.shape)
-        
+
         y = np.zeros((self.batch_size, 3))
-        y[:,0] = np.array(new_data['e1'][indices])#np.exp(np.array(new_data['e1'][indices]))*2/(np.max(np.exp(np.array(new_data['e1'][indices]))*2))#np.exp(np.array(new_data['e1'][indices]))*2 # np.array(new_data['e1'][indices])
-        y[:,1] = np.array(new_data['e2'][indices])#np.exp(np.array(new_data['e2'][indices]))*2/(np.max(np.exp(np.array(new_data['e2'][indices]))*2))#np.exp(np.array(new_data['e2'][indices]))*2 # np.array(new_data['e2'][indices]) # 
-        y[:,2] = np.array(new_data['redshift'][indices])#/(np.max(np.array(new_data['redshift'][indices])))
+        y[:,0] = np.array(new_data['e1_0'][indices])
+        y[:,1] = np.array(new_data['e2_0'][indices])
+        y[:,2] = np.array(new_data['redshift_0'][indices])
         
         # Preprocessing of the data to be easier for the network to learn
         if self.do_norm:
@@ -110,21 +107,12 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
         if self.denorm:
             x = utils.denorm(x, self.bands, n_years = 5)
 
-        #  flip : flipping the image array
-        # rand = np.random.randint(4)
-        # if rand == 1: 
-        #     x = np.flip(x, axis=-1)
-        # elif rand == 2 : 
-        #     x = np.swapaxes(x, -1, -2)
-        # elif rand == 3:
-        #     x = np.swapaxes(np.flip(x, axis=-1), -1, -2)
-        
-        x = np.transpose(x, axes = (0,2,3,1))
+        x = tf.transpose(x, perm= [0,2,3,1])
         
         if self.trainval_or_test == 'training' or self.trainval_or_test == 'validation':
             return x, y
         elif self.trainval_or_test == 'test':
-            return x, y#, data.loc[indices], indices
+            return x, y
 
 
 
