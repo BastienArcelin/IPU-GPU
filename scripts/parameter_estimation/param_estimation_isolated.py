@@ -152,6 +152,7 @@ with strategy.scope():
 #with tf.Session() as sess:
 #tf.compat.v1.disable_eager_execution()
 ######## Train the network
+
     hist = net.fit(training_generator, epochs=50,
                         steps_per_epoch=steps_per_epoch,
                         verbose=1,
@@ -172,7 +173,7 @@ with strategy.scope():
     #                     #use_multiprocessing = True)
 
 saving_path = '/home/astrodeep/bastien/weights/'#test_5
-net.save_weights(saving_path+'cp-{epoch:04d}.ckpt')
+
 
 
 #### Plots
