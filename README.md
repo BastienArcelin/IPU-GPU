@@ -1,6 +1,6 @@
-# Parameter Estimation
+# IPU-GPU
 
-Estimate weak lensing relevant parameter direclty from blended galaxies images.
+Performances comparison IPU (Graphcore) vs GPU.
 
 The images are generated with GalSim (https://github.com/GalSim-developers/GalSim, doc: http://galsim-developers.github.io/GalSim/_build/html/index.html) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from here: https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data).
 
