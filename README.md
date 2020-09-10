@@ -2,7 +2,7 @@
 
 Performances comparison IPU (Graphcore) vs GPU.
 
-Benchmark ideas: 
+Benchmark ideas (https://www.graphcore.ai/benchmarks): 
 classical deep neural network : training and inference
 Bayesian deep neaural network : training and inference
 
