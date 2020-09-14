@@ -171,7 +171,7 @@ with strategy.scope():
 
 
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
-                loss="mean_squared_error")#mean_absolute_error
+                loss="mean_squared_error")
 
 
     #loading_path = '/home/astrodeep/bastien/weights/'
@@ -180,7 +180,7 @@ with strategy.scope():
 
 
 ######## Train the network
-    hist = net.fit(training_ds, steps_per_epoch=200, epochs=10, verbose = 1)#576
+    hist = net.fit(training_ds, steps_per_epoch=200, epochs=50, verbose = 1)#576
     net.summary()
 
     # hist = net.fit(training_data, training_labels, epochs=50, # training
