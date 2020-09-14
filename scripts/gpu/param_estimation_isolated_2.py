@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import collections
 from importlib import reload
-from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
+#from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
 
 # Tensorflow
 import tensorflow
@@ -22,7 +22,7 @@ tfd = tfp.distributions
 
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
 import tools_for_VAE.layers as layers
-from tools_for_VAE import utils, vae_functions, generator, model
+from tools_for_VAE import utils, vae_functions, generator, model_gpu
 from tensorflow.keras import backend as K
 
 
@@ -45,10 +45,10 @@ validation_steps = 64
 
 bands = [4,5,6,7,8,9]
 
-images_dir = '/home/astrodeep/bastien/data/'
+images_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered'
 
-list_of_samples = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
-list_of_samples_val = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
+list_of_samples = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'training')) if x.endswith('.npy')]
+list_of_samples_val = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'validation')) if x.endswith('.npy')]
 list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 print(list_of_samples_test)
 
@@ -129,7 +129,7 @@ if model_choice == 'ls':
     net = model.create_model(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 # Without latent space
 if model_choice == 'wo_ls':
-    net = model.create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+    net = model.create_model_wo_ls_3(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 # Full probabilistic model
 if model_choice == 'full_prob':
     net = model.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -145,7 +145,7 @@ else:
 
 
 net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
-            loss="mean_absolute_error")
+            loss="mean_squared_error")
 
 
 #loading_path = '/home/astrodeep/bastien/weights/'
