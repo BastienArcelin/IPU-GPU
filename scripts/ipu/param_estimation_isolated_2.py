@@ -31,7 +31,7 @@ tfd = tfp.distributions
 
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
 import tools_for_VAE.layers as layers
-from tools_for_VAE import utils, vae_functions, generator, model
+from tools_for_VAE import utils, vae_functions, generator, model_ipu
 from tensorflow.keras import backend as K
 
 
@@ -152,13 +152,13 @@ with strategy.scope():
     model_choice = 'wo_ls'
     # With latent space
     if model_choice == 'ls':
-        net = model.create_model(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+        net = model_ipu.create_model(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
     # Without latent space
     if model_choice == 'wo_ls':
-        net = model.create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+        net = model_ipu.create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
     # Full probabilistic model
     if model_choice == 'full_prob':
-        net = model.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+        net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 
 
     #### Loss definition
