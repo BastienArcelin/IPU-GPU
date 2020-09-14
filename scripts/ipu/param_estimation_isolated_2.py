@@ -12,9 +12,9 @@ from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
 # IPU 
 from tensorflow.python import ipu
 from tensorflow.python.ipu.scopes import ipu_scope
-cfg = ipu.utils.create_ipu_config(profiling=True,
-                                  profile_execution=True,
-                                  report_directory='fixed_fullModel')
+cfg = ipu.utils.create_ipu_config()#profiling=True,
+                                  #profile_execution=True,
+                                  #report_directory='fixed_fullModel'
 cfg = ipu.utils.auto_select_ipus(cfg, 1)
 ipu.utils.configure_ipu_system(cfg)
 
@@ -43,8 +43,8 @@ input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
 latent_dim = 32
 final_dim = 3
-filters = [32, 64, 128, 256]#, 512]
-kernels = [3,3,3,3]#, 3]
+filters = [32, 64, 128, 256]
+kernels = [3,3,3,3]
 
 conv_activation = None
 dense_activation = None
@@ -112,6 +112,7 @@ def test_batch_generator():
         batch_x, batch_y = next(multi_enqueuer.get())
         yield batch_x, batch_y
 
+
 # Recommended to specify the expected output shapes and types here
 output_types = (tf.float32, tf.float32)
 output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
@@ -129,6 +130,18 @@ test_ds = tf.data.Dataset.from_generator(test_batch_generator,
                                             output_types=output_types,
                                             output_shapes=output_shapes).repeat()
 
+def get_dataset(only_features=False):
+    x_train, y_train  = next(iter(test_ds))
+    print('entrée fonction')
+    if only_features:
+        print('if = true')
+        print(x_train.shape)
+        print(x_train[:1].shape)
+        ds = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train[:1], axis = 0).astype("float32")))
+    else:
+        ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+    ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
+    return ds
 
 # IPU
 # Create an IPU distribution strategy
@@ -158,7 +171,7 @@ with strategy.scope():
 
 
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
-                loss="mean_absolute_error")
+                loss="mean_squared_error")#mean_absolute_error
 
 
     #loading_path = '/home/astrodeep/bastien/weights/'
@@ -167,17 +180,7 @@ with strategy.scope():
 
 
 ######## Train the network
-    hist = net.fit(training_ds, steps_per_epoch=2, epochs=1, verbose = 1)#576
-    # hist = net.fit(training_ds, epochs=10,
-    #                     steps_per_epoch=steps_per_epoch,
-    #                     verbose=1,
-    #                     shuffle=True,
-    #                     validation_data=validation_ds,
-    #                     validation_steps=validation_steps)#,
-    #                     #workers=0,#4 
-    #                     #use_multiprocessing = True)
-
-
+    hist = net.fit(training_ds, steps_per_epoch=200, epochs=10, verbose = 1)#576
     net.summary()
 
     # hist = net.fit(training_data, training_labels, epochs=50, # training
@@ -189,44 +192,20 @@ with strategy.scope():
     #                     #workers=0,#4 
     #                     #use_multiprocessing = True)
 
-saving_path = '/home/astrodeep/bastien/weights/'#test_5
-net.save_weights('test')
+    saving_path = '/home/astrodeep/bastien/weights/'#test_5
+    net.save_weights('test')
 
 
 #### Plots
-# test_generator.__getitem__(2)
+    net.load_weights('test')#loading_path)
+    print('weights loaded')
+    print('ici')
+    noise_data = get_dataset(only_features=True)
+    print('get dataset ok')
+    out = net.predict(noise_data)
+    print('prediction ok')
+    print(out)
 
-# training_data = test[0]
-# training_labels = test[1]
-# new_net = model.create_model_wo_ls_3(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-# new_net.summary()
-# loading_path = '/home/astrodeep/bastien/weights/cp.ckpt'
-#latest = tf.train.latest_checkpoint(loading_path)
-#new_net.load_weights(latest)
-
-
-net.load_weights('test')#loading_path)
-print('weights loaded')
-
-
-
-training_data, training_labels  = next(iter(test_ds))
-print(training_data.numpy().shape)
-
-
-#ds = tf.data.Dataset.from_tensor_slices([training_data]).batch(8, drop_remainder=True)
-
-# output_types = (tf.float32, tf.float32)
-# output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
-#                     tf.TensorShape([batch_size, 3]))
-# ds = tf.data.Dataset.from_tensor_generator(test_batch_generator,
-#                                              output_types=output_types,
-#                                              output_shapes=output_shapes)
-#out = net.evaluate(test_ds, steps = 1)#.batch(8, drop_remainder=True)
-#print('evaluate ok: '+str(out))
-ds = tf.data.Dataset.from_tensor_slices((tf.cast(training_data, tf.float32)))
-
-out = net.predict(ds.batch(8, drop_remainder=True))#dataset # ,steps_per_epoch = 1)#training_data     , steps = 1,steps_per_run=8
 
 fig = plt.figure()
 sns.distplot(out.mean().numpy()[:,0], bins = 20)
