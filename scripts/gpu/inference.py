@@ -31,13 +31,6 @@ print(gpus)
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-##### What's written below does not help increasing speed 
-#from tensorflow.keras.mixed_precision import experimental as mixed_precision
-#policy = mixed_precision.Policy('mixed_float16')
-#mixed_precision.set_policy(policy)
-#print('Compute dtype: %s' % policy.compute_dtype)
-#print('Variable dtype: %s' % policy.variable_dtype)
-
 
 ######## Parameters
 nb_of_bands = 6
@@ -85,77 +78,6 @@ y_val[:,2] = data_label[9000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
 ds_val = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_val, axis = 1), np.expand_dims(y_val, axis = 1)))
 
-#With generator (unchanged)
-# training_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
-#                                     batch_size=batch_size, 
-#                                     trainval_or_test='training',
-#                                     do_norm=False,
-#                                     denorm = False,
-#                                     list_of_weights_e=None)
-
-# validation_generator = generator.BatchGenerator(bands, list_of_samples_val, total_sample_size=None,
-#                                     batch_size=batch_size, 
-#                                     trainval_or_test='validation',
-#                                     do_norm=False,
-#                                     denorm = False,
-#                                     list_of_weights_e=None)
-
-# test_generator = generator.BatchGenerator(bands, list_of_samples_test, total_sample_size=None,
-#                                     batch_size=batch_size, 
-#                                     trainval_or_test='test',
-#                                     do_norm=False,
-#                                     denorm = False,
-#                                     list_of_weights_e=None)
-
-
-# NEW: Wrap the generator.BatchGenerator objects in a generator-style function
-# which we can then pass to tf.data.Dataset.from_generator()
-# # (One per train/val/test dataset at the moment, but could be refactored for neatness!)
-# def training_batch_generator():
-#     multi_enqueuer = keras.utils.OrderedEnqueuer(training_generator,
-#                                                 use_multiprocessing=False)
-#     multi_enqueuer.start(workers=10, max_queue_size=10)
-#     while True:
-#         batch_x, batch_y = next(multi_enqueuer.get())
-#         yield batch_x, batch_y
-
-# def validation_batch_generator():
-#     multi_enqueuer = keras.utils.OrderedEnqueuer(validation_generator,
-#                                                     use_multiprocessing=False)
-#     multi_enqueuer.start(workers=10, max_queue_size=10)
-#     while True:
-#         batch_x, batch_y = next(multi_enqueuer.get())
-#         yield batch_x, batch_y
-
-# def test_batch_generator():
-#     multi_enqueuer = keras.utils.OrderedEnqueuer(test_generator,
-#                                                     use_multiprocessing=False)
-#     multi_enqueuer.start(workers=10, max_queue_size=10)
-#     while True:
-#         batch_x, batch_y = next(multi_enqueuer.get())
-#         yield batch_x, batch_y
-
-# # Recommended to specify the expected output shapes and types here
-# output_types = (tf.float32, tf.float32)
-# output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
-#                     tf.TensorShape([batch_size, 3]))
-
-# training_ds = tf.data.Dataset.from_generator(training_batch_generator,
-#                                                 output_types=output_types,
-#                                                 output_shapes=output_shapes).repeat()
-
-# validation_ds = tf.data.Dataset.from_generator(validation_batch_generator,
-#                                                 output_types=output_types,
-#                                                 output_shapes=output_shapes).repeat()
-
-# test_ds = tf.data.Dataset.from_generator(test_batch_generator,
-#                                             output_types=output_types,
-#                                             output_shapes=output_shapes).repeat()
-
-# strategy = tf.distribute.OneDeviceStrategy(device="/gpu:0")
-# with strategy.scope():
-
-
 #### Model definition
 model_choice = 'wo_ls'
 # With latent space
@@ -181,31 +103,9 @@ else:
 net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
             loss="mean_squared_error")
 
-
-######## Train the network
-hist = net.fit(x_train, y_train, batch_size = batch_size, epochs=10,#x_train, y_train#training_ds
-                    steps_per_epoch=steps_per_epoch,
-                    verbose=2,
-                    shuffle=True,
-                    validation_data=(x_val,y_val),#(x_val,y_val),#validation_ds,
-                    validation_steps=validation_steps)#,
-                    #workers=0, 
-                    #use_multiprocessing = True)
-
-
 net.summary()
 
-# saving_path = '/home/astrodeep/bastien/weights/'#test_5
-# net.save_weights('test')
 
-
-#### Plots
-# test_generator.__getitem__(2)
-
-# training_data = test[0]
-# training_labels = test[1]
-# new_net = model.create_model_wo_ls_3(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-# new_net.summary()
 # loading_path = '/home/astrodeep/bastien/weights/cp.ckpt'
 #latest = tf.train.latest_checkpoint(loading_path)
 #new_net.load_weights(latest)
@@ -270,4 +170,3 @@ net.summary()
 # axes[2].set_title('$z$')
 
 # fig.savefig('test_train.png')
-
