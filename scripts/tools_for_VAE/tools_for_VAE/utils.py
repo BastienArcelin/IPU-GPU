@@ -15,7 +15,7 @@ from tensorflow.keras.models import Model, Sequential
 from scipy.stats import norm
 import tensorflow as tf
 
-from . import model, vae_functions, plot, layers
+from . import  vae_functions, plot, layers #model,
 
 I_lsst = np.array([255.2383, 2048.9297, 3616.1757, 4441.0576, 4432.7823, 2864.145])
 I_euclid = np.array([5925.8097, 3883.7892, 1974.2465,  413.3895])
@@ -233,69 +233,69 @@ def delta_min(shift,mag):#(shift_path, mag_path):
     return delta_r, delta_mag
 
 ############# LOAD MODEL ##################
-def load_vae_conv(path,nb_of_bands,folder = False):
-    """
-    Return the loaded VAE located at the path given when the function is called
-    """        
-    latent_dim = 32
+# def load_vae_conv(path,nb_of_bands,folder = False):
+#     """
+#     Return the loaded VAE located at the path given when the function is called
+#     """        
+#     latent_dim = 32
     
-    # Build the encoder and decoder
-    encoder, decoder = model.vae_model(latent_dim, nb_of_bands)
+#     # Build the encoder and decoder
+#     encoder, decoder = model.vae_model(latent_dim, nb_of_bands)
 
-    #### Build the model
-    vae_loaded, Dkl, z = vae_functions.build_vanilla_vae(encoder, decoder, full_cov=False, coeff_KL = 0)
+#     #### Build the model
+#     vae_loaded, Dkl, z = vae_functions.build_vanilla_vae(encoder, decoder, full_cov=False, coeff_KL = 0)
 
-    if folder == False: 
-        vae_loaded.load_weights(path)
-    else:
-        latest = tf.train.latest_checkpoint(path)
-        vae_loaded.load_weights(latest)
+#     if folder == False: 
+#         vae_loaded.load_weights(path)
+#     else:
+#         latest = tf.train.latest_checkpoint(path)
+#         vae_loaded.load_weights(latest)
 
-    return vae_loaded, encoder, decoder, z
+#     return vae_loaded, encoder, decoder, z
 
-def load_model(path,nb_of_bands,folder = False):
-    """
-    Return the loaded VAE located at the path given when the function is called
-    """        
-    latent_dim = 32
+# def load_model(path,nb_of_bands,folder = False):
+#     """
+#     Return the loaded VAE located at the path given when the function is called
+#     """        
+#     latent_dim = 32
     
-    # Build the encoder and decoder
-    encoder, decoder = model.vae_model(latent_dim, nb_of_bands)
+#     # Build the encoder and decoder
+#     encoder, decoder = model.vae_model(latent_dim, nb_of_bands)
 
-    #### Build the model
-    loaded_model = Model(inputs=encoder.inputs, outputs=decoder(encoder.outputs[0]))
+#     #### Build the model
+#     loaded_model = Model(inputs=encoder.inputs, outputs=decoder(encoder.outputs[0]))
 
-    if folder == False: 
-        loaded_model.load_weights(path)
-    else:
-        latest = tf.train.latest_checkpoint(path)
-        loaded_model.load_weights(latest)
+#     if folder == False: 
+#         loaded_model.load_weights(path)
+#     else:
+#         latest = tf.train.latest_checkpoint(path)
+#         loaded_model.load_weights(latest)
 
-    return loaded_model
+#     return loaded_model
 
-def load_vae_full(path, nb_of_bands, folder=False):
-    """
-    Return the loaded VAE located at the path given when the function is called
-    """        
-    latent_dim = 32
+# def load_vae_full(path, nb_of_bands, folder=False):
+#     """
+#     Return the loaded VAE located at the path given when the function is called
+#     """        
+#     latent_dim = 32
     
-    # Build the encoder and decoder
-    encoder, decoder = model_vae.vae_model(latent_dim, nb_of_bands)
-    #z, Dkl = layers.SampleMultivariateGaussian(full_cov=False, add_KL=False, return_KL=True, coeff_KL=0)(encoder.outputs)
+#     # Build the encoder and decoder
+#     encoder, decoder = model_vae.vae_model(latent_dim, nb_of_bands)
+#     #z, Dkl = layers.SampleMultivariateGaussian(full_cov=False, add_KL=False, return_KL=True, coeff_KL=0)(encoder.outputs)
 
-    #### Build the model
-    vae_loaded, Dkl = vae_functions.build_vanilla_vae(encoder, decoder, full_cov=False, coeff_KL = 0)
+#     #### Build the model
+#     vae_loaded, Dkl = vae_functions.build_vanilla_vae(encoder, decoder, full_cov=False, coeff_KL = 0)
 
-    if folder == False: 
-        vae_loaded.load_weights(path)
-    else:
-        latest = tf.train.latest_checkpoint(path)
-        vae_loaded.load_weights(latest)
+#     if folder == False: 
+#         vae_loaded.load_weights(path)
+#     else:
+#         latest = tf.train.latest_checkpoint(path)
+#         vae_loaded.load_weights(latest)
     
-    #encoder.trainable = False
+#     #encoder.trainable = False
 
-    #net = Model(inputs=encoder.inputs, outputs=decoder(z))
-    return  vae_loaded, encoder#net
+#     #net = Model(inputs=encoder.inputs, outputs=decoder(z))
+#     return  vae_loaded, encoder#net
 
 def load_alpha(path_alpha):
     return np.load(path_alpha+'alpha.npy')

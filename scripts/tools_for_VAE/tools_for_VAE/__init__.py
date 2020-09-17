@@ -1,1 +1,1 @@
-from . import callbacks, layers, model, utils, vae_functions
+from . import callbacks, layers, utils, vae_functions
