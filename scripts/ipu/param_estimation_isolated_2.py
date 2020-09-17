@@ -180,7 +180,7 @@ with strategy.scope():
 
 
 ######## Train the network
-    hist = net.fit(training_ds, steps_per_epoch=200, epochs=50, verbose = 1)#576
+    hist = net.fit(training_ds, steps_per_epoch=1250, epochs=50, verbose = 1)#576
     net.summary()
 
     # hist = net.fit(training_data, training_labels, epochs=50, # training
