@@ -37,7 +37,7 @@ from tensorflow.keras import backend as K
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 8
+batch_size = 1
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -60,6 +60,34 @@ list_of_samples = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'te
 list_of_samples_val = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 print(list_of_samples_test)
+
+
+def create_dataset():
+    data = np.load(images_dir+'test/galaxies_isolated_20191024_0_images.npy', mmap_mode = 'c')
+    print('ok loading input')
+    data_label = pd.read_csv(images_dir+'test/galaxies_isolated_20191024_0_data.csv')
+    x_train = tf.transpose(data[:9000,1], perm= [0,2,3,1])[:,:,:,4:]
+    y_train = np.zeros((9000,3))
+    y_train[:,0] = data_label[:9000]['e1']
+    y_train[:,1] = data_label[:9000]['e2']
+    y_train[:,2] = data_label[:9000]['redshift']
+    y_train = tf.convert_to_tensor(y_train)
+    #ds_train = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train, axis = 1).astype("float32"), np.expand_dims(y_train,axis = 1).astype("float32"))).shuffle(10000).batch(batch_size, drop_remainder=True).repeat()
+    ## OR ##
+    ds_train = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(batch_size, drop_remainder=True).repeat()
+    ds_train = ds_train.map(lambda d, l:
+                            (tf.cast(d, tf.float32), tf.cast(l, tf.float32)))
+    print('ds train is OK ')
+    return ds_train
+    
+# x_val = tf.transpose(data[9000:,1], perm= [0,2,3,1])[:,:,:,4:]
+# y_val = np.zeros((1000,3))
+# y_val[:,0] = data_label[9000:]['e1']
+# y_val[:,1] = data_label[9000:]['e2']
+# y_val[:,2] = data_label[9000:]['redshift']
+# y_val = tf.convert_to_tensor(y_val)
+# ds_val = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_val, axis = 1), np.expand_dims(y_val, axis = 1)))
+
 
 
 #With generator (unchanged)
@@ -178,19 +206,10 @@ with strategy.scope():
     #latest = tf.train.latest_checkpoint(loading_path)
     #net.load_weights(latest)
 
-
+    ds_train = create_dataset()
 ######## Train the network
-    hist = net.fit(training_ds, steps_per_epoch=1250, epochs=50, verbose = 1)#576
+    hist = net.fit(ds_train, steps_per_epoch=9000, epochs=50, verbose = 1)#1125#1250
     net.summary()
-
-    # hist = net.fit(training_data, training_labels, epochs=50, # training
-    #                     steps_per_epoch=steps_per_epoch,#128
-    #                     verbose=1,
-    #                     shuffle=True,
-    #                     validation_data=(validation_data,validation_labels), # validation
-    #                     validation_steps=validation_steps)#,#16
-    #                     #workers=0,#4 
-    #                     #use_multiprocessing = True)
 
     saving_path = '/home/astrodeep/bastien/weights/'#test_5
     net.save_weights('test')
