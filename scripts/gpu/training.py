@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import collections
 from importlib import reload
-#from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
+import time
 
 # Tensorflow
 import tensorflow
@@ -41,7 +41,7 @@ for gpu in gpus:
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 8
+batch_size = 14
 print('The batchsize is : '+str(batch_size))
 
 input_shape = (64, 64, nb_of_bands)
@@ -53,9 +53,6 @@ kernels = [3,3,3,3]
 
 conv_activation = None
 dense_activation = None
-
-steps_per_epoch = 1125#1100#00
-validation_steps = 125#150#50
 
 bands = [4,5,6,7,8,9]
 
@@ -69,21 +66,24 @@ images_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/
 data = np.load('/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered/test/galaxies_isolated_20191024_0_images.npy', mmap_mode = 'c')
 data_label = pd.read_csv('/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered/test/galaxies_isolated_20191024_0_data.csv')
 #training_data = np.zeros((9000,2))
-x_train = tf.transpose(data[:9000,1], perm= [0,2,3,1])[:,:,:,4:]
-y_train = np.zeros((9000,3))
-y_train[:,0] = data_label[:9000]['e1']
-y_train[:,1] = data_label[:9000]['e2']
-y_train[:,2] = data_label[:9000]['redshift']
+x_train = tf.transpose(data[:8000,1], perm= [0,2,3,1])[:,:,:,4:]
+y_train = np.zeros((8000,3))
+y_train[:,0] = data_label[:8000]['e1']
+y_train[:,1] = data_label[:8000]['e2']
+y_train[:,2] = data_label[:8000]['redshift']
 y_train = tf.convert_to_tensor(y_train)
 ds_train = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train, axis = 1), np.expand_dims(y_train,axis = 1)))
 
-x_val = tf.transpose(data[9000:,1], perm= [0,2,3,1])[:,:,:,4:]
-y_val = np.zeros((1000,3))
-y_val[:,0] = data_label[9000:]['e1']
-y_val[:,1] = data_label[9000:]['e2']
-y_val[:,2] = data_label[9000:]['redshift']
+x_val = tf.transpose(data[8000:,1], perm= [0,2,3,1])[:,:,:,4:]
+y_val = np.zeros((10000-len(x_train),3))
+y_val[:,0] = data_label[8000:]['e1']
+y_val[:,1] = data_label[8000:]['e2']
+y_val[:,2] = data_label[8000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
 ds_val = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_val, axis = 1), np.expand_dims(y_val, axis = 1)))
+
+steps_per_epoch = int(len(x_train)/batch_size)
+validation_steps = int((10000-len(x_train))/batch_size)
 
 #With generator (unchanged)
 # training_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
@@ -183,17 +183,19 @@ net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3),
 
 
 ######## Train the network
-hist = net.fit(x_train, y_train, batch_size = batch_size, epochs=5,#x_train, y_train#training_ds
-                    steps_per_epoch=steps_per_epoch,
-                    verbose=2,
-                    shuffle=True,
-                    validation_data=(x_val,y_val),#(x_val,y_val),#validation_ds,
-                    validation_steps=validation_steps)#,
-                    #workers=0, 
-                    #use_multiprocessing = True)
+t_1 = time.time()
+hist = net.fit(x_train, y_train, 
+                batch_size = batch_size, 
+                epochs=100,
+                steps_per_epoch=steps_per_epoch,
+                verbose=1,
+                shuffle=True,
+                validation_data=(x_val,y_val),
+                validation_steps=0)
+t_2 = time.time()
 
-
+print('training in '+str(t_2-t_1)+' seconds')
 net.summary()
 
-# saving_path = '/home/astrodeep/bastien/weights/'#test_5
-# net.save_weights('test')
+saving_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
+net.save_weights(saving_path+'test')
