@@ -1,29 +1,13 @@
 # Import necessary librairies
-
-import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow.keras
-import sys
-import os
-import logging
-#import galsim
-import random
-import cmath as cm
-import math
 import tensorflow_probability as tfp
-from tensorflow.keras import backend as K
-from tensorflow.keras import metrics
-from tensorflow.keras.layers import Input, Dense, Lambda, Layer, Add, Multiply, Reshape, Flatten, BatchNormalization
-from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Conv2D, Input, Dense, Dropout, MaxPool2D, Flatten,  Reshape, UpSampling2D, Cropping2D, Conv2DTranspose, PReLU, Concatenate, Lambda, BatchNormalization, concatenate, LeakyReLU
-
-from tensorflow import keras
-# IPU 
-from tensorflow.python import ipu
-
+from tensorflow.keras.layers import Dense, BatchNormalization, Conv2D, PReLU
 import tensorflow as tf
 tfd = tfp.distributions
+from tensorflow import keras
 
+# IPU 
+from tensorflow.python import ipu
 
 
 def create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None):
