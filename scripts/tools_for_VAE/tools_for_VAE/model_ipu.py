@@ -26,7 +26,7 @@ tfd = tfp.distributions
 
 
 
-def create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None):
+def create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None):
     h = []
     h.append(BatchNormalization())
     for i in range(len(filters)):
