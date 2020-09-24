@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import collections
 from importlib import reload
-#from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
+import time
 
 # Tensorflow
 import tensorflow
@@ -106,13 +106,11 @@ net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3),
 net.summary()
 
 
-# loading_path = '/home/astrodeep/bastien/weights/cp.ckpt'
-#latest = tf.train.latest_checkpoint(loading_path)
-#new_net.load_weights(latest)
+loading_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
+latest = tf.train.latest_checkpoint(loading_path)
+net.load_weights(latest)
 
-
-# net.load_weights('test')#loading_path)
-# print('weights loaded')
+print('weights loaded')
 
 
 
@@ -121,52 +119,60 @@ net.summary()
 
 # ds = tf.data.Dataset.from_tensor_slices((tf.cast(training_data, tf.float32)))
 
-# out = net.predict(ds.batch(8, drop_remainder=True))#dataset # ,steps_per_epoch = 1)#training_data     , steps = 1,steps_per_run=8
+t_1 = time.time()
+out = []
+for i in range (len(x_val)):
+    out.append(net(x_val[i]))
+out = np.array(out)
+#out = net(x_val)
+t_2 = time.time()
+print('prediction done in: '+str(t_2-t_1)+' seconds')
+print(out.shape)
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,0], bins = 20)
-# sns.distplot(training_labels[:,0], bins = 20)
-# fig.savefig('test_distrib_e1.png')
+fig = plt.figure()
+sns.distplot(out.mean().numpy()[:,0], bins = 20)
+sns.distplot(y_val[:,0], bins = 20)
+fig.savefig('test_distrib_e1.png')
 
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,1], bins = 20)
-# sns.distplot(training_labels[:,1], bins = 20)
-# fig.savefig('test_distrib_e2.png')
+fig = plt.figure()
+sns.distplot(out.mean().numpy()[:,1], bins = 20)
+sns.distplot(y_val[:,1], bins = 20)
+fig.savefig('test_distrib_e2.png')
 
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,2], bins = 20)
-# sns.distplot(training_labels[:,2], bins = 20)
-# fig.savefig('test_distrib_e3.png')
+fig = plt.figure()
+sns.distplot(out.mean().numpy()[:,2], bins = 20)
+sns.distplot(y_val[:,2], bins = 20)
+fig.savefig('test_distrib_e3.png')
 
-# fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
-# x = np.linspace(-1,1)
-# axes[0].plot(x, x)
-# axes[0].legend()
-# axes[0].set_ylim(-1,1)
-# axes[0].set_title('$e1$')
+axes[0].plot(y_val[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
+axes[0].plot(y_val[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
+axes[0].plot(y_val[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
+x = np.linspace(-1,1)
+axes[0].plot(x, x)
+axes[0].legend()
+axes[0].set_ylim(-1,1)
+axes[0].set_title('$e1$')
 
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
-# x = np.linspace(-1,1)
-# axes[1].plot(x, x)
-# axes[1].legend()
-# axes[1].set_ylim(-1,1)
-# axes[1].set_title('$e2$')
+axes[1].plot(y_val[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
+axes[1].plot(y_val[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
+axes[1].plot(y_val[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
+x = np.linspace(-1,1)
+axes[1].plot(x, x)
+axes[1].legend()
+axes[1].set_ylim(-1,1)
+axes[1].set_title('$e2$')
 
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
-# x = np.linspace(0,4)
-# axes[2].plot(x, x)
-# axes[2].legend()
-# axes[2].set_ylim(-1,5.5)
-# axes[2].set_title('$z$')
+axes[2].plot(y_val[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
+axes[2].plot(y_val[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
+axes[2].plot(y_val[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
+x = np.linspace(0,4)
+axes[2].plot(x, x)
+axes[2].legend()
+axes[2].set_ylim(-1,5.5)
+axes[2].set_title('$z$')
 
-# fig.savefig('test_train.png')
+fig.savefig('test_train.png')
