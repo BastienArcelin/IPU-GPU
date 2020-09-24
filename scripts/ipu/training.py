@@ -8,6 +8,7 @@ import seaborn as sns
 import collections
 from importlib import reload
 from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
+import time
 
 # IPU 
 from tensorflow.python import ipu
@@ -37,7 +38,7 @@ from tensorflow.keras import backend as K
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1
+batch_size = 12
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -49,8 +50,7 @@ kernels = [3,3,3,3]
 conv_activation = None
 dense_activation = None
 
-steps_per_epoch = 512
-validation_steps = 64
+
 
 bands = [4,5,6,7,8,9]
 
@@ -62,15 +62,15 @@ list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_di
 print(list_of_samples_test)
 
 
-def create_dataset():
+def create_dataset(batch_size):
     data = np.load(images_dir+'test/galaxies_isolated_20191024_0_images.npy', mmap_mode = 'c')
     print('ok loading input')
     data_label = pd.read_csv(images_dir+'test/galaxies_isolated_20191024_0_data.csv')
-    x_train = tf.transpose(data[:9000,1], perm= [0,2,3,1])[:,:,:,4:]
-    y_train = np.zeros((9000,3))
-    y_train[:,0] = data_label[:9000]['e1']
-    y_train[:,1] = data_label[:9000]['e2']
-    y_train[:,2] = data_label[:9000]['redshift']
+    x_train = tf.transpose(data[:8000,1], perm= [0,2,3,1])[:,:,:,4:]
+    y_train = np.zeros((8000,3))
+    y_train[:,0] = data_label[:8000]['e1']
+    y_train[:,1] = data_label[:8000]['e2']
+    y_train[:,2] = data_label[:8000]['redshift']
     y_train = tf.convert_to_tensor(y_train)
     #ds_train = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train, axis = 1).astype("float32"), np.expand_dims(y_train,axis = 1).astype("float32"))).shuffle(10000).batch(batch_size, drop_remainder=True).repeat()
     ## OR ##
@@ -78,7 +78,8 @@ def create_dataset():
     ds_train = ds_train.map(lambda d, l:
                             (tf.cast(d, tf.float32), tf.cast(l, tf.float32)))
     print('ds train is OK ')
-    return ds_train
+    steps_per_epoch = int(len(x_train)/batch_size)
+    return ds_train, steps_per_epoch
     
 # x_val = tf.transpose(data[9000:,1], perm= [0,2,3,1])[:,:,:,4:]
 # y_val = np.zeros((1000,3))
@@ -91,85 +92,85 @@ def create_dataset():
 
 
 #With generator (unchanged)
-training_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
-                                    batch_size=batch_size, 
-                                    trainval_or_test='training',
-                                    do_norm=False,
-                                    denorm = False,
-                                    list_of_weights_e=None)
+# training_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
+#                                     batch_size=batch_size, 
+#                                     trainval_or_test='training',
+#                                     do_norm=False,
+#                                     denorm = False,
+#                                     list_of_weights_e=None)
 
-validation_generator = generator.BatchGenerator(bands, list_of_samples_val, total_sample_size=None,
-                                    batch_size=batch_size, 
-                                    trainval_or_test='validation',
-                                    do_norm=False,
-                                    denorm = False,
-                                    list_of_weights_e=None)
+# validation_generator = generator.BatchGenerator(bands, list_of_samples_val, total_sample_size=None,
+#                                     batch_size=batch_size, 
+#                                     trainval_or_test='validation',
+#                                     do_norm=False,
+#                                     denorm = False,
+#                                     list_of_weights_e=None)
 
-test_generator = generator.BatchGenerator(bands, list_of_samples_test, total_sample_size=None,
-                                    batch_size=batch_size, 
-                                    trainval_or_test='test',
-                                    do_norm=False,
-                                    denorm = False,
-                                    list_of_weights_e=None)
-
-
-# NEW: Wrap the generator.BatchGenerator objects in a generator-style function
-# which we can then pass to tf.data.Dataset.from_generator()
-# (One per train/val/test dataset at the moment, but could be refactored for neatness!)
-def training_batch_generator():
-    multi_enqueuer = keras.utils.OrderedEnqueuer(training_generator,
-                                                use_multiprocessing=False)
-    multi_enqueuer.start(workers=10, max_queue_size=10)
-    while True:
-        batch_x, batch_y = next(multi_enqueuer.get())
-        yield batch_x, batch_y
-
-def validation_batch_generator():
-    multi_enqueuer = keras.utils.OrderedEnqueuer(validation_generator,
-                                                    use_multiprocessing=False)
-    multi_enqueuer.start(workers=10, max_queue_size=10)
-    while True:
-        batch_x, batch_y = next(multi_enqueuer.get())
-        yield batch_x, batch_y
-
-def test_batch_generator():
-    multi_enqueuer = keras.utils.OrderedEnqueuer(test_generator,
-                                                    use_multiprocessing=False)
-    multi_enqueuer.start(workers=10, max_queue_size=10)
-    while True:
-        batch_x, batch_y = next(multi_enqueuer.get())
-        yield batch_x, batch_y
+# test_generator = generator.BatchGenerator(bands, list_of_samples_test, total_sample_size=None,
+#                                     batch_size=batch_size, 
+#                                     trainval_or_test='test',
+#                                     do_norm=False,
+#                                     denorm = False,
+#                                     list_of_weights_e=None)
 
 
-# Recommended to specify the expected output shapes and types here
-output_types = (tf.float32, tf.float32)
-output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
-                    tf.TensorShape([batch_size, 3]))
+# # NEW: Wrap the generator.BatchGenerator objects in a generator-style function
+# # which we can then pass to tf.data.Dataset.from_generator()
+# # (One per train/val/test dataset at the moment, but could be refactored for neatness!)
+# def training_batch_generator():
+#     multi_enqueuer = keras.utils.OrderedEnqueuer(training_generator,
+#                                                 use_multiprocessing=False)
+#     multi_enqueuer.start(workers=10, max_queue_size=10)
+#     while True:
+#         batch_x, batch_y = next(multi_enqueuer.get())
+#         yield batch_x, batch_y
 
-training_ds = tf.data.Dataset.from_generator(training_batch_generator,
-                                                output_types=output_types,
-                                                output_shapes=output_shapes).repeat()
+# def validation_batch_generator():
+#     multi_enqueuer = keras.utils.OrderedEnqueuer(validation_generator,
+#                                                     use_multiprocessing=False)
+#     multi_enqueuer.start(workers=10, max_queue_size=10)
+#     while True:
+#         batch_x, batch_y = next(multi_enqueuer.get())
+#         yield batch_x, batch_y
 
-validation_ds = tf.data.Dataset.from_generator(validation_batch_generator,
-                                                output_types=output_types,
-                                                output_shapes=output_shapes).repeat()
+# def test_batch_generator():
+#     multi_enqueuer = keras.utils.OrderedEnqueuer(test_generator,
+#                                                     use_multiprocessing=False)
+#     multi_enqueuer.start(workers=10, max_queue_size=10)
+#     while True:
+#         batch_x, batch_y = next(multi_enqueuer.get())
+#         yield batch_x, batch_y
 
-test_ds = tf.data.Dataset.from_generator(test_batch_generator,
-                                            output_types=output_types,
-                                            output_shapes=output_shapes).repeat()
 
-def get_dataset(only_features=False):
-    x_train, y_train  = next(iter(test_ds))
-    print('entrée fonction')
-    if only_features:
-        print('if = true')
-        print(x_train.shape)
-        print(x_train[:1].shape)
-        ds = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train[:1], axis = 0).astype("float32")))
-    else:
-        ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
-    return ds
+# # Recommended to specify the expected output shapes and types here
+# output_types = (tf.float32, tf.float32)
+# output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
+#                     tf.TensorShape([batch_size, 3]))
+
+# training_ds = tf.data.Dataset.from_generator(training_batch_generator,
+#                                                 output_types=output_types,
+#                                                 output_shapes=output_shapes).repeat()
+
+# validation_ds = tf.data.Dataset.from_generator(validation_batch_generator,
+#                                                 output_types=output_types,
+#                                                 output_shapes=output_shapes).repeat()
+
+# test_ds = tf.data.Dataset.from_generator(test_batch_generator,
+#                                             output_types=output_types,
+#                                             output_shapes=output_shapes).repeat()
+
+# def get_dataset(only_features=False):
+#     x_train, y_train  = next(iter(test_ds))
+#     print('entrée fonction')
+#     if only_features:
+#         print('if = true')
+#         print(x_train.shape)
+#         print(x_train[:1].shape)
+#         ds = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train[:1], axis = 0).astype("float32")))
+#     else:
+#         ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+#     ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
+#     return ds
 
 # IPU
 # Create an IPU distribution strategy
@@ -206,71 +207,74 @@ with strategy.scope():
     #latest = tf.train.latest_checkpoint(loading_path)
     #net.load_weights(latest)
 
-    ds_train = create_dataset()
+    ds_train, steps_per_epoch = create_dataset(batch_size)
 ######## Train the network
-    hist = net.fit(ds_train, steps_per_epoch=9000, epochs=50, verbose = 1)#1125#1250
+    t_1 = time.time()
+    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=100, verbose = 1)#1125#9000
+    t_2 = time.time()
+    print('training took '+str(t_2-t_1)+' seconds')
     net.summary()
 
-    saving_path = '/home/astrodeep/bastien/weights/'#test_5
+    #saving_path = '/home/astrodeep/bastien/weights/'#test_5
     net.save_weights('test')
 
 
 #### Plots
-    net.load_weights('test')#loading_path)
-    print('weights loaded')
-    print('ici')
-    noise_data = get_dataset(only_features=True)
-    print('get dataset ok')
-    out = net.predict(noise_data)
-    print('prediction ok')
-    print(out)
+    # net.load_weights('test')#loading_path)
+    # print('weights loaded')
+    # print('ici')
+    # noise_data = get_dataset(only_features=True)
+    # print('get dataset ok')
+    # out = net.predict(noise_data)
+    # print('prediction ok')
+    # print(out)
 
 
-fig = plt.figure()
-sns.distplot(out.mean().numpy()[:,0], bins = 20)
-sns.distplot(training_labels[:,0], bins = 20)
-fig.savefig('test_distrib_e1.png')
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,0], bins = 20)
+# sns.distplot(training_labels[:,0], bins = 20)
+# fig.savefig('test_distrib_e1.png')
 
 
-fig = plt.figure()
-sns.distplot(out.mean().numpy()[:,1], bins = 20)
-sns.distplot(training_labels[:,1], bins = 20)
-fig.savefig('test_distrib_e2.png')
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,1], bins = 20)
+# sns.distplot(training_labels[:,1], bins = 20)
+# fig.savefig('test_distrib_e2.png')
 
 
-fig = plt.figure()
-sns.distplot(out.mean().numpy()[:,2], bins = 20)
-sns.distplot(training_labels[:,2], bins = 20)
-fig.savefig('test_distrib_e3.png')
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,2], bins = 20)
+# sns.distplot(training_labels[:,2], bins = 20)
+# fig.savefig('test_distrib_e3.png')
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+# fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
-axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
-axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
-x = np.linspace(-1,1)
-axes[0].plot(x, x)
-axes[0].legend()
-axes[0].set_ylim(-1,1)
-axes[0].set_title('$e1$')
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
+# x = np.linspace(-1,1)
+# axes[0].plot(x, x)
+# axes[0].legend()
+# axes[0].set_ylim(-1,1)
+# axes[0].set_title('$e1$')
 
-axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
-axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
-axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
-x = np.linspace(-1,1)
-axes[1].plot(x, x)
-axes[1].legend()
-axes[1].set_ylim(-1,1)
-axes[1].set_title('$e2$')
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
+# x = np.linspace(-1,1)
+# axes[1].plot(x, x)
+# axes[1].legend()
+# axes[1].set_ylim(-1,1)
+# axes[1].set_title('$e2$')
 
-axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
-axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
-axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
-x = np.linspace(0,4)
-axes[2].plot(x, x)
-axes[2].legend()
-axes[2].set_ylim(-1,5.5)
-axes[2].set_title('$z$')
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
+# x = np.linspace(0,4)
+# axes[2].plot(x, x)
+# axes[2].legend()
+# axes[2].set_ylim(-1,5.5)
+# axes[2].set_title('$z$')
 
-fig.savefig('test_train.png')
+# fig.savefig('test_train.png')
 
