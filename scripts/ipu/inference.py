@@ -129,3 +129,64 @@ with strategy.scope():
     out = net.predict(noise_data)
     print('prediction ok')
     print(out)
+
+
+#### Plots
+    # net.load_weights('test')#loading_path)
+    # print('weights loaded')
+    # print('ici')
+    # noise_data = get_dataset(only_features=True)
+    # print('get dataset ok')
+    # out = net.predict(noise_data)
+    # print('prediction ok')
+    # print(out)
+
+
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,0], bins = 20)
+# sns.distplot(training_labels[:,0], bins = 20)
+# fig.savefig('test_distrib_e1.png')
+
+
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,1], bins = 20)
+# sns.distplot(training_labels[:,1], bins = 20)
+# fig.savefig('test_distrib_e2.png')
+
+
+# fig = plt.figure()
+# sns.distplot(out.mean().numpy()[:,2], bins = 20)
+# sns.distplot(training_labels[:,2], bins = 20)
+# fig.savefig('test_distrib_e3.png')
+
+# fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
+# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
+# x = np.linspace(-1,1)
+# axes[0].plot(x, x)
+# axes[0].legend()
+# axes[0].set_ylim(-1,1)
+# axes[0].set_title('$e1$')
+
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
+# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
+# x = np.linspace(-1,1)
+# axes[1].plot(x, x)
+# axes[1].legend()
+# axes[1].set_ylim(-1,1)
+# axes[1].set_title('$e2$')
+
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
+# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
+# x = np.linspace(0,4)
+# axes[2].plot(x, x)
+# axes[2].legend()
+# axes[2].set_ylim(-1,5.5)
+# axes[2].set_title('$z$')
+
+# fig.savefig('test_train.png')
+
