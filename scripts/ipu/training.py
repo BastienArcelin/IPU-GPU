@@ -18,7 +18,7 @@ ipu.utils.configure_ipu_system(cfg)
 
 # Needed files
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import utils, model_ipu
+from tools_for_VAE import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
@@ -35,11 +35,13 @@ bands = [4,5,6,7,8,9]
 conv_activation = None
 dense_activation = None
 
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
 
 images_dir = '/home/astrodeep/bastien/data/'
 
-list_of_samples = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
-list_of_samples_data = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.csv')]
+list_of_samples = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
+list_of_samples_data = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.csv')]
 print(list_of_samples)
 
 
