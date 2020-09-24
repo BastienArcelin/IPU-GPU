@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import collections
-from importlib import reload
-from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
+import tensorflow as tf
+from tensorflow import keras
 
 # IPU 
+from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
 from tensorflow.python import ipu
 from tensorflow.python.ipu.scopes import ipu_scope
 cfg = ipu.utils.create_ipu_config()#profiling=True,
@@ -18,21 +18,10 @@ cfg = ipu.utils.create_ipu_config()#profiling=True,
 cfg = ipu.utils.auto_select_ipus(cfg, 1)
 ipu.utils.configure_ipu_system(cfg)
 
-# Tensorflow
-import tensorflow
-import tensorflow as tf
-import tensorflow_probability as tfp
-from tensorflow import keras
-from tensorflow.keras.layers import Input, Dense, Lambda, Layer, Add, Multiply, Reshape, Flatten, BatchNormalization
-from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Conv2D, Input, Dense, Dropout, MaxPool2D, Flatten,  Reshape, UpSampling2D, Cropping2D, Conv2DTranspose, PReLU, Concatenate, Lambda, BatchNormalization, concatenate, LeakyReLU
-
-tfd = tfp.distributions
-
+# Needed files
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
 import tools_for_VAE.layers as layers
-from tools_for_VAE import utils, vae_functions, generator, model_ipu
-from tensorflow.keras import backend as K
+from tools_for_VAE import utils, generator, model_ipu
 
 
 ######## Parameters
@@ -56,8 +45,6 @@ bands = [4,5,6,7,8,9]
 
 images_dir = '/home/astrodeep/bastien/data/'
 
-list_of_samples = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
-list_of_samples_val = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 print(list_of_samples_test)
 
@@ -91,13 +78,11 @@ def get_dataset(only_features=False):
     print('entrée fonction')
     if only_features:
         print('if = true')
-        print(x_train.shape)
-        print(x_train[:1].shape)
-        ds = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train[:1], axis = 0).astype("float32")))
+        ds = tf.data.Dataset.from_tensor_slices((x_train)).batch(batch_size, drop_remainder=True)
     else:
         ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
-    return ds
+    return ds, y_train
 
 # IPU
 # Create an IPU distribution strategy
@@ -105,13 +90,10 @@ strategy = ipu.ipu_strategy.IPUStrategy()
 #with ipu_scope("/device:IPU:0"):
 with strategy.scope():
     #### Model definition
-    model_choice = 'wo_ls'
-    # With latent space
-    if model_choice == 'ls':
-        net = model_ipu.create_model(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-    # Without latent space
-    if model_choice == 'wo_ls':
-        net = model_ipu.create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+    model_choice = 'det'
+    # Fully deterministic model
+    if model_choice == 'det':
+        net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
     # Full probabilistic model
     if model_choice == 'full_prob':
         net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -120,13 +102,20 @@ with strategy.scope():
                 loss="mean_squared_error")
 
 
-
     net.load_weights('test')#loading_path)
     print('weights loaded')
     print('ici')
-    noise_data = get_dataset(only_features=True)
+    #for i in range (100)
+    
     print('get dataset ok')
-    out = net.predict(noise_data)
+    out_res = []
+    out_label = []
+    for i in range (10):
+        print(i)
+        noise_data, y = get_dataset(only_features=True)
+        out_label.append(y)
+        out = net.predict(noise_data)
+        out_res.append(out)
     print('prediction ok')
     print(out)
 
