@@ -21,14 +21,13 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
     """
     Class to create batch generator for the LSST VAE.
     """
-    #@tf.function
     def __init__(self, bands, list_of_samples,total_sample_size, batch_size, trainval_or_test, do_norm,denorm, list_of_weights_e):
         """
         Initialization function
         total_sample_size: size of the whole training (or validation) sample
         batch_size: size of the batches to provide
         list_of_samples: list of the numpy arrays which correspond to the whole training (or validation) sample
-#        path: path to the first numpy array taken in which the batch will be taken
+        path: path to the first numpy array taken in which the batch will be taken
         training_or_validation: choice between training of validation generator
         x: input of the neural network
         y: target of the neural network
@@ -82,10 +81,10 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
         sample_filename = self.list_of_samples[index]
         filename = 'galaxies_blended_20191024_0_images.npy'
         sample = np.load(sample_filename, mmap_mode = 'c')
-        data = pd.read_csv(sample_filename.replace('images.npy','data.csv'))#_classified
+        data = pd.read_csv(sample_filename.replace('images.npy','data.csv'))
 
-        new_data = data[(np.abs(data['e1'])<=1.) &#e1_0
-                        (np.abs(data['e2'])<=1) ]#e2_0
+        new_data = data[(np.abs(data['e1'])<=1.) &
+                        (np.abs(data['e2'])<=1) ]
 
         if self.list_of_weights_e == None:
             indices = np.random.choice(new_data.index, size=self.batch_size, replace=False)
@@ -97,9 +96,9 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
         x = sample[indices,1][:,self.bands]
 
         y = np.zeros((self.batch_size, 3))
-        y[:,0] = np.array(new_data['e1'][indices])#e1_0
-        y[:,1] = np.array(new_data['e2'][indices])#e2_0
-        y[:,2] = np.array(new_data['redshift'][indices])#redshift_0
+        y[:,0] = np.array(new_data['e1'][indices])
+        y[:,1] = np.array(new_data['e2'][indices])
+        y[:,2] = np.array(new_data['redshift'][indices])
         
         # Preprocessing of the data to be easier for the network to learn
         if self.do_norm:
