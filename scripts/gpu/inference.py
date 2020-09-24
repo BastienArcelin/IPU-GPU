@@ -10,7 +10,7 @@ import tensorflow as tf
 
 ### Needed files
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import utils, model_gpu
+from tools_for_VAE import model_gpu
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -34,11 +34,13 @@ conv_activation = None
 dense_activation = None
 bands = [4,5,6,7,8,9]
 
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
 ### Load data
 images_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered'
 
-list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
-list_of_samples_test_labels = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.csv')]
+list_of_samples_test = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
+list_of_samples_test_labels = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.csv')]
 
 data = np.load(list_of_samples_test[0], mmap_mode = 'c')
 data_label = pd.read_csv(list_of_samples_test_labels[0])
