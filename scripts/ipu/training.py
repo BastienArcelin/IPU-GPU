@@ -64,13 +64,10 @@ def create_dataset(batch_size):
 strategy = ipu.ipu_strategy.IPUStrategy()
 with strategy.scope():
     #### Model definition
-    model_choice = 'wo_ls'
-    # With latent space
-    if model_choice == 'ls':
-        net = model_ipu.create_model(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-    # Without latent space
-    if model_choice == 'wo_ls':
-        net = model_ipu.create_model_wo_ls_2(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+    model_choice = 'det'
+    # Fully deterministic model
+    if model_choice == 'det':
+        net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
     # Full probabilistic model
     if model_choice == 'full_prob':
         net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
