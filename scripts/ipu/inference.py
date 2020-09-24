@@ -20,8 +20,7 @@ ipu.utils.configure_ipu_system(cfg)
 
 # Needed files
 sys.path.insert(0,'../../scripts/tools_for_VAE/')
-import tools_for_VAE.layers as layers
-from tools_for_VAE import utils, generator, model_ipu
+from tools_for_VAE import generator, model_ipu
 
 
 ######## Parameters
@@ -43,7 +42,11 @@ validation_steps = 64
 
 bands = [4,5,6,7,8,9]
 
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
+
 images_dir = '/home/astrodeep/bastien/data/'
+
 
 list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 print(list_of_samples_test)
