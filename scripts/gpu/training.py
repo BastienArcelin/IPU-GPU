@@ -89,9 +89,9 @@ net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3),
 t_1 = time.time()
 hist = net.fit(x_train, y_train, 
                 batch_size = batch_size, 
-                epochs=100,
+                epochs=10,
                 steps_per_epoch=steps_per_epoch,
-                verbose=1,
+                verbose=2,
                 shuffle=True,
                 validation_data=(x_val,y_val),
                 validation_steps=0)
