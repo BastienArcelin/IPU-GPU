@@ -9,7 +9,8 @@ import tensorflow as tf
 # Needed files
 #sys.path.insert(0,'../../scripts/tools_for_VAE/')
 #from tools_for_VAE import model_gpu
-import model_gpu
+import model_gpu, callbacks
+from callbacks import time_callback
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -85,17 +86,19 @@ else:
 net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
             loss="mean_squared_error")
 
-
+## Callbacks 
+time_c = time_callback()
 ######## Train the network
 t_1 = time.time()
 hist = net.fit(x_train, y_train, 
                 batch_size = batch_size, 
-                epochs=10,
+                epochs=120,
                 steps_per_epoch=steps_per_epoch,
                 verbose=1,
                 shuffle=True,
                 validation_data=(x_val,y_val),
-                validation_steps=0)
+                validation_steps=0,
+                callbacks = [time_c])
 t_2 = time.time()
 
 print('training in '+str(t_2-t_1)+' seconds')
