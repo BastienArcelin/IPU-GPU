@@ -9,8 +9,9 @@ import time
 import tensorflow as tf
 
 ### Needed files
-sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import model_gpu
+#sys.path.insert(0,'../../scripts/tools_for_VAE/')
+#from tools_for_VAE import model_gpu
+import model_gpu
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -95,10 +96,11 @@ print('weights loaded')
 
 ### Do inference
 t_1 = time.time()
-out = []
-for i in range (len(x_val)):
-    out.append(net(x_val[i]))
-out = np.array(out)
+#out = []
+out = net(x_val)
+#for i in range (len(x_val)):
+#    out.append(net(x_val[i]))
+#out = np.array(out)
 #out = net(x_val)
 t_2 = time.time()
 print('prediction done in: '+str(t_2-t_1)+' seconds')

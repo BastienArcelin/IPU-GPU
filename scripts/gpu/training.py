@@ -7,8 +7,9 @@ import time
 import tensorflow as tf
 
 # Needed files
-sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import model_gpu
+#sys.path.insert(0,'../../scripts/tools_for_VAE/')
+#from tools_for_VAE import model_gpu
+import model_gpu
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -91,7 +92,7 @@ hist = net.fit(x_train, y_train,
                 batch_size = batch_size, 
                 epochs=10,
                 steps_per_epoch=steps_per_epoch,
-                verbose=2,
+                verbose=1,
                 shuffle=True,
                 validation_data=(x_val,y_val),
                 validation_steps=0)
