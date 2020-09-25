@@ -19,9 +19,10 @@ cfg = ipu.utils.auto_select_ipus(cfg, 1)
 ipu.utils.configure_ipu_system(cfg)
 
 # Needed files
-sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import generator, model_ipu
-
+#sys.path.insert(0,'../../scripts/tools_for_VAE/')
+#from tools_for_VAE import generator, model_ipu
+import generator
+import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
@@ -48,7 +49,7 @@ def listdir_fullpath(d):
 images_dir = '/home/astrodeep/bastien/data/'
 
 
-list_of_samples_test = [x for x in utils.listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
+list_of_samples_test = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
 print(list_of_samples_test)
 
 

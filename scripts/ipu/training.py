@@ -17,8 +17,9 @@ cfg = ipu.utils.auto_select_ipus(cfg, 1)
 ipu.utils.configure_ipu_system(cfg)
 
 # Needed files
-sys.path.insert(0,'../../scripts/tools_for_VAE/')
-from tools_for_VAE import model_ipu
+#sys.path.insert(0,'../../scripts/tools_for_VAE/')
+#from tools_for_VAE import model_ipu
+import model_ipu
 
 ######## Parameters
 nb_of_bands = 6

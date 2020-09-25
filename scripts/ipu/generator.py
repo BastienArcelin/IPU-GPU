@@ -10,11 +10,7 @@ import pandas as pd
 import scipy
 from scipy.stats import norm
 import tensorflow as tf 
-
 from random import choice
-
-sys.path.insert(0,'../tools_for_VAE/')
-from tools_for_VAE import utils
 
 #@tf.function
 class BatchGenerator(tensorflow.keras.utils.Sequence):
@@ -99,12 +95,6 @@ class BatchGenerator(tensorflow.keras.utils.Sequence):
         y[:,0] = np.array(new_data['e1'][indices])
         y[:,1] = np.array(new_data['e2'][indices])
         y[:,2] = np.array(new_data['redshift'][indices])
-        
-        # Preprocessing of the data to be easier for the network to learn
-        if self.do_norm:
-            x = utils.norm(x, self.bands, n_years = 5)
-        if self.denorm:
-            x = utils.denorm(x, self.bands, n_years = 5)
 
         x = tf.transpose(x, perm= [0,2,3,1])
         
