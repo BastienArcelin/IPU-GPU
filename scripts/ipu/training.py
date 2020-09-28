@@ -20,10 +20,11 @@ ipu.utils.configure_ipu_system(cfg)
 #sys.path.insert(0,'../../scripts/tools_for_VAE/')
 #from tools_for_VAE import model_ipu
 import model_ipu
+from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 14
+batch_size = 1
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -89,9 +90,10 @@ with strategy.scope():
                 loss="mean_squared_error")
 
     ds_train, steps_per_epoch = create_dataset(batch_size)
+    time_c = time_callback()
 ######## Train the network
     t_1 = time.time()
-    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=100, verbose = 1)#1125#9000
+    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=112, verbose = 1, callbacks = [time_c])#1125#9000
     t_2 = time.time()
 
     print('training took '+str(t_2-t_1)+' seconds')
