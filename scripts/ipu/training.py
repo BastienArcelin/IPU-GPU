@@ -24,7 +24,7 @@ from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1
+batch_size = 14
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -100,4 +100,3 @@ with strategy.scope():
     net.summary()
 
     net.save_weights('test')
-

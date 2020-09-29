@@ -26,7 +26,7 @@ import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1
+batch_size = 10
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -105,23 +105,26 @@ with strategy.scope():
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
                 loss="mean_squared_error")
 
+    #net.build((None, 64,64,6))
 
     net.load_weights('test')#loading_path)
     print('weights loaded')
     print('ici')
     #for i in range (100)
-    
+    net.summary()
+
     print('get dataset ok')
     out_res = []
     out_label = []
-    for i in range (10):
+    for i in range (1):
         print(i)
         noise_data, y = get_dataset(only_features=True)
         out_label.append(y)
         out = net.predict(noise_data)
         out_res.append(out)
+        print(out, y)
     print('prediction ok')
-    print(out)
+    print(out_res)
 
 
 #### Plots
