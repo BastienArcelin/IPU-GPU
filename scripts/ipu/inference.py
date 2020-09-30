@@ -46,10 +46,10 @@ bands = [4,5,6,7,8,9]
 def listdir_fullpath(d):
     return [os.path.join(d, f) for f in os.listdir(d)]
 
-images_dir = '/home/astrodeep/bastien/data/'
+# Load data_dir from environment variables
+data_dir = str(os.environ.get('BENCHMARK_DATA'))
 
-
-list_of_samples_test = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
+list_of_samples_test = [x for x in listdir_fullpath(data_dir) if x.endswith('.npy')]
 print(list_of_samples_test)
 
 
