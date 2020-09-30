@@ -26,11 +26,11 @@ cd IPU-GPU
   pip install tensorflow-gpu==2.1.0
   pip install tensorflow-probability==0.9.0
   ```
-<>- with pip
-<>  - Install most of the required packages
-<>  ```
-<>  python3 -m pip install -r ressources/requirements.txt
-<>  ```
+[//]: <>- with pip
+[//]: <>  - Install most of the required packages
+[//]: <>  ```
+[//]: <>  python3 -m pip install -r ressources/requirements.txt
+[//]: <>  ```
 
 ## Before starting
 1. Add a ```IMGEN_DATA``` environment variable, in the shell you are running, which points to the directory where you want your data to be stored.
@@ -41,7 +41,8 @@ Example, add to your ```.bashrc```:
 export IMGEN_DATA='/path/to/data'
 ```
 
-<>2. You need to download the COSMOS catalog. You can find it [here](https://zenodo.org/record/3242143#.Xv2pTvLgq9Y). You can chose the <>```COSMOS_25.2_training_sample.tar.gz``` (4.4 GB).
+[//]: <>2. You need to download the COSMOS catalog. You can find it [here](https://zenodo.org/record/3242143#.Xv2pTvLgq9Y). You can chose the 
+[//]: <>```COSMOS_25.2_training_sample.tar.gz``` (4.4 GB).
 3. Save this file in the directory chosen for storing data (i.e. at ```IMGEN_DATA```).
 
 
