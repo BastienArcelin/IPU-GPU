@@ -27,7 +27,6 @@ cd IPU-GPU
   pip install tensorflow-probability==0.9.0
   ```
 - with pip
-  - Install most of the required packages
   ```
   python3 -m pip install -r ressources/requirements.txt
   ```
