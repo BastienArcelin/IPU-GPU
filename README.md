@@ -9,7 +9,7 @@ Benchmark ideas (https://www.graphcore.ai/benchmarks):
 The images are generated with GalSim (https://github.com/GalSim-developers/GalSim, doc: http://galsim-developers.github.io/GalSim/_build/html/index.html) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from here: https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data).
 
 ## Installation
-### GPU
+### For GPU
 1. Clone the repository
 ```
 git clone https://github.com/BastienArcelin/IPU-GPU
@@ -41,13 +41,12 @@ Example, add to your ```.bashrc```:
 export BENCHMARK_DATA='/path/to/data'
 ```
 
-[//]: <>2. You need to download the COSMOS catalog. You can find it [here](https://zenodo.org/record/3242143#.Xv2pTvLgq9Y). You can chose the 
-[//]: <>```COSMOS_25.2_training_sample.tar.gz``` (4.4 GB).
+2. You need to download the COSMOS catalog. You can find it [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) (3.3 GB).
 3. Save this file in the directory chosen for storing data (i.e. at ```BENCHMARK_DATA```).
 
 
 ## Notebook
-A notebook where the benchmarck's results are visualized can be found [here](https://github.com/BastienArcelin/IPU-GPU/tree/master/notebooks)
+A notebook where the benchmark's results are visualized can be found [here](https://github.com/BastienArcelin/IPU-GPU/tree/master/notebooks)
 
 ## List of required packages
 - pandas
