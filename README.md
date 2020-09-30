@@ -19,7 +19,7 @@ cd IPU-GPU
   - Install non-tensorflow packages with conda and activate the environnement
   ```
   conda env create -f ressources/env_gpu.yml
-  conda activate env_gpu_benchmarck
+  conda activate env_gpu_benchmark
   ```
   - Install tensorflow packages with pip
   ```
@@ -32,17 +32,17 @@ cd IPU-GPU
   ```
 
 ## Before starting
-1. Add a ```IMGEN_DATA``` environment variable, in the shell you are running, which points to the directory where you want your data to be stored.
+1. Add a ```BENCHMARK_DATA``` environment variable, in the shell you are running, which points to the directory where you want your data to be stored.
 
 Example, add to your ```.bashrc```:
 
 ```
-export IMGEN_DATA='/path/to/data'
+export BENCHMARK_DATA='/path/to/data'
 ```
 
 [//]: <>2. You need to download the COSMOS catalog. You can find it [here](https://zenodo.org/record/3242143#.Xv2pTvLgq9Y). You can chose the 
 [//]: <>```COSMOS_25.2_training_sample.tar.gz``` (4.4 GB).
-3. Save this file in the directory chosen for storing data (i.e. at ```IMGEN_DATA```).
+3. Save this file in the directory chosen for storing data (i.e. at ```BENCHMARK_DATA```).
 
 
 ## Notebook
