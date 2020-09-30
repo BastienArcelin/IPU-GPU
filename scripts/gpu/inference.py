@@ -47,19 +47,19 @@ data = np.load(list_of_samples_test[0], mmap_mode = 'c')
 data_label = pd.read_csv(list_of_samples_test_labels[0])
 
 ### Define samples
-x_train = tf.transpose(data[:9000,1], perm= [0,2,3,1])[:,:,:,4:]
-y_train = np.zeros((9000,3))
-y_train[:,0] = data_label[:9000]['e1']
-y_train[:,1] = data_label[:9000]['e2']
-y_train[:,2] = data_label[:9000]['redshift']
+x_train = tf.transpose(data[:8000,1], perm= [0,2,3,1])[:,:,:,4:]
+y_train = np.zeros((8000,3))
+y_train[:,0] = data_label[:8000]['e1']
+y_train[:,1] = data_label[:8000]['e2']
+y_train[:,2] = data_label[:8000]['redshift']
 y_train = tf.convert_to_tensor(y_train)
 ds_train = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train, axis = 1), np.expand_dims(y_train,axis = 1)))
 
-x_val = tf.transpose(data[9000:,1], perm= [0,2,3,1])[:,:,:,4:]
-y_val = np.zeros((1000,3))
-y_val[:,0] = data_label[9000:]['e1']
-y_val[:,1] = data_label[9000:]['e2']
-y_val[:,2] = data_label[9000:]['redshift']
+x_val = tf.transpose(data[8000:,1], perm= [0,2,3,1])[:,:,:,4:]
+y_val = np.zeros((2000,3))
+y_val[:,0] = data_label[8000:]['e1']
+y_val[:,1] = data_label[8000:]['e2']
+y_val[:,2] = data_label[8000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
 ds_val = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_val, axis = 1), np.expand_dims(y_val, axis = 1)))
 
@@ -95,16 +95,21 @@ net.load_weights(latest)
 print('weights loaded')
 
 ### Do inference
-t_1 = time.time()
-#out = []
-out = net(x_val)
-#for i in range (len(x_val)):
-#    out.append(net(x_val[i]))
-#out = np.array(out)
-#out = net(x_val)
-t_2 = time.time()
-print('prediction done in: '+str(t_2-t_1)+' seconds')
-print(out.shape)
+## In once
+# t0 = time.time()
+# out = net(x_val[:1000])
+# t1 = time.time()
+
+## One by one
+out = []
+for i in range (1001):
+    if i == 1:
+        t0 = time.time()
+    out.append(net(np.expand_dims(x_val[i], axis = 1)))
+t1 = time.time()
+out = np.array(out)
+
+print('prediction done in: '+str(t1-t0)+' seconds')
 
 ### Plot results
 fig = plt.figure()
