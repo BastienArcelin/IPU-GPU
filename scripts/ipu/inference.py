@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 from tensorflow import keras
+import time
 
 # IPU 
 from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
@@ -26,7 +27,7 @@ import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 10
+batch_size = 1
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -49,12 +50,12 @@ def listdir_fullpath(d):
 # Load data_dir from environment variables
 data_dir = str(os.environ.get('BENCHMARK_DATA'))
 
-list_of_samples_test = [x for x in listdir_fullpath(data_dir) if x.endswith('.npy')]
-print(list_of_samples_test)
-
+list_of_samples = [x for x in listdir_fullpath(data_dir) if x.endswith('.npy')]
+list_of_samples_data = [x for x in listdir_fullpath(data_dir) if x.endswith('.csv')]
+print(list_of_samples)
 
 ###### Generator
-test_generator = generator.BatchGenerator(bands, list_of_samples_test, total_sample_size=None,
+test_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
                                     batch_size=batch_size, 
                                     trainval_or_test='test',
                                     do_norm=False,
@@ -78,13 +79,25 @@ test_ds = tf.data.Dataset.from_generator(test_batch_generator,
                                             output_shapes=output_shapes).repeat()
 
 def get_dataset(only_features=False):
-    x_train, y_train  = next(iter(test_ds))
+    #x_train, y_train  = next(iter(test_ds))
+    data = np.load(list_of_samples[0], mmap_mode = 'c')
+    data_label = pd.read_csv(list_of_samples_data[0])
+    x_train = tf.transpose(data[8000:,1], perm= [0,2,3,1])[:,:,:,4:]
+    y_train = np.zeros((2000,3))
+    y_train[:,0] = data_label[8000:]['e1']
+    y_train[:,1] = data_label[8000:]['e2']
+    y_train[:,2] = data_label[8000:]['redshift']
+    y_train = tf.convert_to_tensor(y_train)
+
     print('entrée fonction')
     if only_features:
-        print('if = true')
         ds = tf.data.Dataset.from_tensor_slices((x_train)).batch(batch_size, drop_remainder=True)
+        ds = ds.map(lambda d:
+                    (tf.cast(d, tf.float32)))
     else:
-        ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+        ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(batch_size, drop_remainder=True).repeat()
+        ds = ds.map(lambda d, l:
+                    (tf.cast(d, tf.float32), tf.cast(l, tf.float32)))
     ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
     return ds, y_train
 
@@ -105,80 +118,75 @@ with strategy.scope():
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
                 loss="mean_squared_error")
 
-
+# Load model weights
     net.load_weights('test')
-    #hist = net.fit(ds_test, steps_per_epoch=steps_per_epoch, epochs=5, verbose = 1)
-    #net.summary()
 
-    out_res = []
-    out_label = []
-    for i in range (1):
-        print(i)
-        noise_data, y = get_dataset(only_features=True)
-        out_label.append(y)
-        out = net.predict(noise_data)
-        out_res.append(out)
-        print(out, y)
-    print('prediction ok')
-    print(out_res)
+    # Do inference
+    ## In once
+    noise_data, y = get_dataset(only_features=True)
+    net.predict(noise_data)
+    t0 = time.time()
+    out = net.predict(noise_data)
+    t1 = time.time()
+    
+    ## One by one
+    # out_res = []
+    # out_label = []
+    # noise_data, y = get_dataset(only_features=True)
+    # for i in range (11):
+    #     print(i)
+    #     if i ==1:
+    #         t0 = time.time()
+    #     out_label.append(y)
+    #     out = net.predict(noise_data)
+    #     out_res.append(out)
+    #     print(out, y)
+    # t1 = time.time()
+    print('prediction ok, time: '+str(t1-t0))
+    #print(out_res)
 
 
 #### Plots
-    # net.load_weights('test')#loading_path)
-    # print('weights loaded')
-    # print('ici')
-    # noise_data = get_dataset(only_features=True)
-    # print('get dataset ok')
-    # out = net.predict(noise_data)
-    # print('prediction ok')
-    # print(out)
+print(np.shape(out))
+fig = plt.figure()
+sns.distplot(out[0][:,0], bins = 20, label = 'output')
+sns.distplot(y[:,0], bins = 20, label = 'input')
+fig.savefig('test_distrib_e1.png')
 
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,0], bins = 20)
-# sns.distplot(training_labels[:,0], bins = 20)
-# fig.savefig('test_distrib_e1.png')
+fig = plt.figure()
+sns.distplot(out[0][:,1], bins = 20)
+sns.distplot(y[:,1], bins = 20)
+fig.savefig('test_distrib_e2.png')
 
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,1], bins = 20)
-# sns.distplot(training_labels[:,1], bins = 20)
-# fig.savefig('test_distrib_e2.png')
+fig = plt.figure()
+sns.distplot(out[0][:,2], bins = 20)
+sns.distplot(y[:,2], bins = 20)
+fig.savefig('test_distrib_e3.png')
 
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-# fig = plt.figure()
-# sns.distplot(out.mean().numpy()[:,2], bins = 20)
-# sns.distplot(training_labels[:,2], bins = 20)
-# fig.savefig('test_distrib_e3.png')
+axes[0].plot(y[:,0], out[0][:,0], '.', label = 'mean')
+x = np.linspace(-1,1)
+axes[0].plot(x, x)
+axes[0].legend()
+axes[0].set_ylim(-1,1)
+axes[0].set_title('$e1$')
 
-# fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+axes[1].plot(y[:,1], out[0][:,1], '.', label = 'mean')
+x = np.linspace(-1,1)
+axes[1].plot(x, x)
+axes[1].legend()
+axes[1].set_ylim(-1,1)
+axes[1].set_title('$e2$')
 
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0], '.', label = 'mean')
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]+ 2*out.stddev().numpy()[:,0], '+', label = 'mean + 2stddev')
-# axes[0].plot(training_labels[:,0], out.mean().numpy()[:,0]- 2*out.stddev().numpy()[:,0], '+', label = 'mean - 2stddev')
-# x = np.linspace(-1,1)
-# axes[0].plot(x, x)
-# axes[0].legend()
-# axes[0].set_ylim(-1,1)
-# axes[0].set_title('$e1$')
+axes[2].plot(y[:,2], out[0][:,2], '.', label = 'mean')
+x = np.linspace(0,4)
+axes[2].plot(x, x)
+axes[2].legend()
+axes[2].set_ylim(-1,5.5)
+axes[2].set_title('$z$')
 
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1], '.', label = 'mean')
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]+ 2*out.stddev().numpy()[:,1], '+', label = 'mean + 2stddev')
-# axes[1].plot(training_labels[:,1], out.mean().numpy()[:,1]- 2*out.stddev().numpy()[:,1], '+', label = 'mean - 2stddev')
-# x = np.linspace(-1,1)
-# axes[1].plot(x, x)
-# axes[1].legend()
-# axes[1].set_ylim(-1,1)
-# axes[1].set_title('$e2$')
-
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2], '.', label = 'mean')
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]+ 2*out.stddev().numpy()[:,2], '+', label = 'mean + 2stddev')
-# axes[2].plot(training_labels[:,2], out.mean().numpy()[:,2]- 2*out.stddev().numpy()[:,2], '+', label = 'mean - 2stddev')
-# x = np.linspace(0,4)
-# axes[2].plot(x, x)
-# axes[2].legend()
-# axes[2].set_ylim(-1,5.5)
-# axes[2].set_title('$z$')
-
-# fig.savefig('test_train.png')
+fig.savefig('test_train.png')
 
