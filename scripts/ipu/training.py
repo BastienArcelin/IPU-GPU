@@ -94,7 +94,7 @@ with strategy.scope():
     time_c = time_callback()
 ######## Train the network
     t_1 = time.time()
-    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=250, verbose = 1, callbacks = [time_c])#1125#9000
+    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=1000, verbose = 1, callbacks = [time_c])#1125#9000
     t_2 = time.time()
 
     print('training took '+str(t_2-t_1)+' seconds')

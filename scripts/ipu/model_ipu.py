@@ -20,7 +20,8 @@ def create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, fina
         h.append(PReLU())
     h.append(keras.layers.Flatten())
     h.append(Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), activation=None))
-    h.append(Dense(final_dim))#tfp.layers.MultivariateNormalTriL(final_dim))#
+    h.append(Dense(final_dim))
+    #h.append(tfp.layers.MultivariateNormalTriL(final_dim))#
     m = ipu.keras.Sequential(h)
 
     return m
