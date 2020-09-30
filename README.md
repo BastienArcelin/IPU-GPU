@@ -26,11 +26,11 @@ cd IPU-GPU
   pip install tensorflow-gpu==2.1.0
   pip install tensorflow-probability==0.9.0
   ```
-[//]: <>- with pip
-[//]: <>  - Install most of the required packages
-[//]: <>  ```
-[//]: <>  python3 -m pip install -r ressources/requirements.txt
-[//]: <>  ```
+- with pip
+  - Install most of the required packages
+  ```
+  python3 -m pip install -r ressources/requirements.txt
+  ```
 
 ## Before starting
 1. Add a ```IMGEN_DATA``` environment variable, in the shell you are running, which points to the directory where you want your data to be stored.
