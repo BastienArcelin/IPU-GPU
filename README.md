@@ -14,12 +14,13 @@ Trained on images composed of 6 LSST filters. The size of each image is (6,64,64
 ### Bayesian deep neaural network : training and inference
 
 ## Installation
-### For GPU
 1. Clone the repository
 ```
 git clone https://github.com/BastienArcelin/IPU-GPU
 cd IPU-GPU
 ```
+
+### For GPU
 2. Install 
 - with [conda](https://www.anaconda.com/products/individual) or [miniconda](https://docs.conda.io/en/latest/miniconda.html)
   - Install non-tensorflow packages with conda and activate the environnement
@@ -34,7 +35,13 @@ cd IPU-GPU
   ```
 - with pip
   ```
-  python3 -m pip install -r ressources/requirements.txt
+  python3 -m pip install -r ressources/requirements_gpu.txt
+  ```
+  
+### For IPU
+2. Install with pip
+  ```
+  python3 -m pip install -r ressources/requirements_ipu.txt
   ```
 
 ## Before starting
