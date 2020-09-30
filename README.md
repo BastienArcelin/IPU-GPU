@@ -3,7 +3,6 @@
 ## Performances comparison IPU (Graphcore - [Azure IPU Preview](https://documents.graphcore.ai/documents/UG20/latest)) vs GPU (V100)
 The images availables [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) are generated with [GalSim](https://github.com/GalSim-developers/GalSim) ([doc](http://galsim-developers.github.io/GalSim/_build/html/index.html)) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from [here](https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data)).
 
-Benchmark ideas (https://www.graphcore.ai/benchmarks): 
 ### classical deep neural network : training and inference
 Trained on 10 000 images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 14 due to IPU memory constraint.
 <p align="center">
