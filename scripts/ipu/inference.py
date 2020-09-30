@@ -27,7 +27,7 @@ import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1
+batch_size = 8
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -123,8 +123,10 @@ with strategy.scope():
     # Do inference
     ## In once
     # Warm up stage
-    noise_data, y = get_dataset(only_features=True, size = 1)
-    net.predict(noise_data)
+    noise_data, y = get_dataset(only_features=True, size = 8)
+    print(noise_data)
+    net.predict(noise_data, steps_per_run = 1)
+    print('warm up OK')
     # Prediction
     noise_data, y = get_dataset(only_features=True, size = 2000)
     t0 = time.time()
