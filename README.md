@@ -9,6 +9,7 @@ Benchmark ideas (https://www.graphcore.ai/benchmarks):
 The images are generated with GalSim (https://github.com/GalSim-developers/GalSim, doc: http://galsim-developers.github.io/GalSim/_build/html/index.html) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from here: https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data).
 
 ## Installation
+### GPU
 1. Clone the repository
 ```
 git clone https://github.com/BastienArcelin/IPU-GPU
