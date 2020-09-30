@@ -1,4 +1,4 @@
-name: env_gpu_benchmarck
+name: env_gpu_benchmark
 channels:
   - conda-forge
 dependencies:
