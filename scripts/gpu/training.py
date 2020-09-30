@@ -36,11 +36,11 @@ bands = [4,5,6,7,8,9]
 
 def listdir_fullpath(d):
     return [os.path.join(d, f) for f in os.listdir(d)]
-### Loading data
-images_dir = '/sps/lsst/users/barcelin/data/TFP/GalSim_COSMOS/isolated_galaxies/centered'
+# Load data_dir from environment variables
+data_dir = str(os.environ.get('BENCHMARK_DATA'))
 
-list_of_samples = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.npy')]
-list_of_samples_labels = [x for x in listdir_fullpath(os.path.join(images_dir,'test')) if x.endswith('.csv')]
+list_of_samples = [x for x in listdir_fullpath(data_dir) if x.endswith('.npy')]
+list_of_samples_labels = [x for x in listdir_fullpath(data_dir) if x.endswith('.csv')]
 
 data = np.load(list_of_samples[0], mmap_mode = 'c')
 data_label = pd.read_csv(list_of_samples_labels[0])
