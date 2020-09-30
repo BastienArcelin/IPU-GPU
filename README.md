@@ -38,7 +38,7 @@ cd IPU-GPU
   python3 -m pip install -r ressources/requirements_gpu.txt
   ```
   
-### For IPU
+### For IPU (work done with [Azure IPU Preview](https://documents.graphcore.ai/documents/UG20/latest)) 
 2. Install with pip
   ```
   python3 -m pip install -r ressources/requirements_ipu.txt
