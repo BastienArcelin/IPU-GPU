@@ -1,0 +1,8 @@
+numpy
+pandas
+seaborn
+matplotlib
+time
+jupyter
+gc-tensorflow==2.1.0
+tensorflow-probability==0.9.0
