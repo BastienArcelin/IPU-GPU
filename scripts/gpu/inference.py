@@ -53,7 +53,6 @@ y_train[:,0] = data_label[:8000]['e1']
 y_train[:,1] = data_label[:8000]['e2']
 y_train[:,2] = data_label[:8000]['redshift']
 y_train = tf.convert_to_tensor(y_train)
-ds_train = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_train, axis = 1), np.expand_dims(y_train,axis = 1)))
 
 x_val = tf.transpose(data[8000:,1], perm= [0,2,3,1])[:,:,:,4:]
 y_val = np.zeros((2000,3))
@@ -61,7 +60,6 @@ y_val[:,0] = data_label[8000:]['e1']
 y_val[:,1] = data_label[8000:]['e2']
 y_val[:,2] = data_label[8000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
-ds_val = tf.data.Dataset.from_tensor_slices((np.expand_dims(x_val, axis = 1), np.expand_dims(y_val, axis = 1)))
 
 #### Model definition
 model_choice = 'det'
