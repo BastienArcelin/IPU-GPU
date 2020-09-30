@@ -101,19 +101,15 @@ with strategy.scope():
     # Full probabilistic model
     if model_choice == 'full_prob':
         net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-    
+
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
                 loss="mean_squared_error")
 
-    #net.build((None, 64,64,6))
 
-    net.load_weights('test')#loading_path)
-    print('weights loaded')
-    print('ici')
-    #for i in range (100)
-    net.summary()
+    net.load_weights('test')
+    #hist = net.fit(ds_test, steps_per_epoch=steps_per_epoch, epochs=5, verbose = 1)
+    #net.summary()
 
-    print('get dataset ok')
     out_res = []
     out_label = []
     for i in range (1):
