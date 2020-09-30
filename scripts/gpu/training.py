@@ -19,7 +19,7 @@ for gpu in gpus:
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 14
+batch_size = 1024
 print('The batchsize is : '+str(batch_size))
 
 input_shape = (64, 64, nb_of_bands)
@@ -92,9 +92,9 @@ time_c = time_callback()
 t_1 = time.time()
 hist = net.fit(x_train, y_train, 
                 batch_size = batch_size, 
-                epochs=120,
+                epochs=1000,
                 steps_per_epoch=steps_per_epoch,
-                verbose=1,
+                verbose=2,
                 shuffle=True,
                 validation_data=(x_val,y_val),
                 validation_steps=0,
@@ -105,4 +105,4 @@ print('training in '+str(t_2-t_1)+' seconds')
 net.summary()
 
 saving_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
-net.save_weights(saving_path+'test')
+#net.save_weights(saving_path+'test')
