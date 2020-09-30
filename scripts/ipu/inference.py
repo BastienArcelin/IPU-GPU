@@ -78,18 +78,17 @@ test_ds = tf.data.Dataset.from_generator(test_batch_generator,
                                             output_types=output_types,
                                             output_shapes=output_shapes).repeat()
 
-def get_dataset(only_features=False):
+def get_dataset(only_features=False, size = 2000):
     #x_train, y_train  = next(iter(test_ds))
     data = np.load(list_of_samples[0], mmap_mode = 'c')
     data_label = pd.read_csv(list_of_samples_data[0])
-    x_train = tf.transpose(data[8000:,1], perm= [0,2,3,1])[:,:,:,4:]
-    y_train = np.zeros((2000,3))
-    y_train[:,0] = data_label[8000:]['e1']
-    y_train[:,1] = data_label[8000:]['e2']
-    y_train[:,2] = data_label[8000:]['redshift']
+    x_train = tf.transpose(data[8000:8000+size,1], perm= [0,2,3,1])[:,:,:,4:]
+    y_train = np.zeros((size,3))
+    y_train[:,0] = data_label[8000:8000+size]['e1']
+    y_train[:,1] = data_label[8000:8000+size]['e2']
+    y_train[:,2] = data_label[8000:8000+size]['redshift']
     y_train = tf.convert_to_tensor(y_train)
 
-    print('entrée fonction')
     if only_features:
         ds = tf.data.Dataset.from_tensor_slices((x_train)).batch(batch_size, drop_remainder=True)
         ds = ds.map(lambda d:
@@ -123,8 +122,11 @@ with strategy.scope():
 
     # Do inference
     ## In once
-    noise_data, y = get_dataset(only_features=True)
+    # Warm up stage
+    noise_data, y = get_dataset(only_features=True, size = 1)
     net.predict(noise_data)
+    # Prediction
+    noise_data, y = get_dataset(only_features=True, size = 2000)
     t0 = time.time()
     out = net.predict(noise_data)
     t1 = time.time()
