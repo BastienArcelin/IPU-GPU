@@ -27,7 +27,7 @@ import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 8
+batch_size = 1
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
