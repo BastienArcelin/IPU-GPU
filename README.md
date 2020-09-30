@@ -5,7 +5,7 @@ The images availables [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) are
 
 Benchmark ideas (https://www.graphcore.ai/benchmarks): 
 ### classical deep neural network : training and inference
-Trained on images composed of 6 LSST filters. The size of each image is (6,64,64). The tests were performed only until a batch size of 14 due to IPU memory constraint.
+Trained on images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 14 due to IPU memory constraint.
 <p align="center">
   <img src="/img/training_time.png" title="field_image">
 </p>
