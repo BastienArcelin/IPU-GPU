@@ -1,17 +1,16 @@
 # IPU-GPU
 
-Performances comparison IPU (Graphcore) vs GPU.
+## Performances comparison IPU (Graphcore) vs GPU (V100).
+The images availables [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) are generated with [GalSim](https://github.com/GalSim-developers/GalSim) ([doc](http://galsim-developers.github.io/GalSim/_build/html/index.html)) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from [here](https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data)).
 
 Benchmark ideas (https://www.graphcore.ai/benchmarks): 
-- classical deep neural network : training and inference
+### classical deep neural network : training and inference
 <p align="center">
   <img src="/img/training_time.png" title="field_image">
 </p>
 
 
-- Bayesian deep neaural network : training and inference
-
-The images availables [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) are generated with [GalSim](https://github.com/GalSim-developers/GalSim) ([doc](http://galsim-developers.github.io/GalSim/_build/html/index.html)) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from [here](https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data)).
+### Bayesian deep neaural network : training and inference
 
 ## Installation
 ### For GPU
