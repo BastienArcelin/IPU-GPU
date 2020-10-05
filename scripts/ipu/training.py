@@ -13,9 +13,19 @@ from tensorflow.python.ipu.scopes import ipu_scope
 cfg = ipu.utils.create_ipu_config()#profiling=True,
                                   #profile_execution=True,
                                   #report_directory='fixed_fullModel'
-cfg = ipu.utils.auto_select_ipus(cfg, 1)
-ipu.utils.configure_ipu_system(cfg)
+#cfg = ipu.utils.auto_select_ipus(cfg, 1)
 
+
+# Handle CMD arguments
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--replication-factor', type=int, default=2,
+                    help="Number of IPUs to replicate across")
+opts = parser.parse_args()
+# Auto select as many IPUs as we want to replicate across
+# ...(must be a power of 2 - IPU driver MultiIPUs come only in powers of 2)
+cfg = ipu.utils.auto_select_ipus(cfg, opts.replication_factor)
+ipu.utils.configure_ipu_system(cfg)
 # Needed files
 #sys.path.insert(0,'../../scripts/tools_for_VAE/')
 #from tools_for_VAE import model_ipu
@@ -24,7 +34,7 @@ from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 14
+batch_size = 11
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
