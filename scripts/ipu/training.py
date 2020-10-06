@@ -78,7 +78,7 @@ def create_dataset(batch_size):
 strategy = ipu.ipu_strategy.IPUStrategy()
 with strategy.scope():
     #### Model definition
-    model_choice = 'det'
+    model_choice = 'full_prob'
     # Fully deterministic model
     if model_choice == 'det':
         net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -94,7 +94,7 @@ with strategy.scope():
     time_c = time_callback()
 ######## Train the network
     t_1 = time.time()
-    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=120, verbose = 1, callbacks = [time_c])#1125#9000
+    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=1200, verbose = 1, callbacks = [time_c])#1125#9000
     t_2 = time.time()
 
     print('training took '+str(t_2-t_1)+' seconds')
