@@ -94,18 +94,18 @@ print('weights loaded')
 
 ### Do inference
 ## In once
-# t0 = time.time()
-# out = net(x_val[:1000])
-# t1 = time.time()
+t0 = time.time()
+out = net(x_val)
+t1 = time.time()
 
 ## One by one
-out = []
-for i in range (1001):
-    if i == 1:
-        t0 = time.time()
-    out.append(net(np.expand_dims(x_val[i], axis = 1)))
-t1 = time.time()
-out = np.array(out)
+# out = []
+# for i in range (1001):
+#     if i == 1:
+#         t0 = time.time()
+#     out.append(net(np.expand_dims(x_val[i], axis = 1)))
+# t1 = time.time()
+# out = np.array(out)
 
 print('prediction done in: '+str(t1-t0)+' seconds')
 
