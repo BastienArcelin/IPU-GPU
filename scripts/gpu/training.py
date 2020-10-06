@@ -19,7 +19,7 @@ for gpu in gpus:
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1024
+batch_size = 8
 print('The batchsize is : '+str(batch_size))
 
 input_shape = (64, 64, nb_of_bands)
@@ -66,22 +66,13 @@ validation_steps = int((10000-len(x_train))/batch_size)
 
 
 #### Model definition
-model_choice = 'det'
+model_choice = 'full_prob'
 # Fully deterministic model
 if model_choice == 'det':
     net = model_gpu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 # Full probabilistic model
 if model_choice == 'full_prob':
     net = model_gpu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
-
-
-#### Loss definition
-if model_choice == 'full_prob':
-    kl = sum(net.losses)
-    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x) + kl *(-1+1/(batch_size))
-else:
-    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
-
 
 net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
             loss="mean_squared_error")
@@ -92,9 +83,9 @@ time_c = time_callback()
 t_1 = time.time()
 hist = net.fit(x_train, y_train, 
                 batch_size = batch_size, 
-                epochs=1000,
+                epochs=120,
                 steps_per_epoch=steps_per_epoch,
-                verbose=2,
+                verbose=1,
                 shuffle=True,
                 validation_data=(x_val,y_val),
                 validation_steps=0,
