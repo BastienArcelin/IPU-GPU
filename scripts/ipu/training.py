@@ -13,7 +13,7 @@ from tensorflow.python.ipu.scopes import ipu_scope
 cfg = ipu.utils.create_ipu_config()#profiling=True,
                                   #profile_execution=True,
                                   #report_directory='fixed_fullModel'
-#cfg = ipu.utils.auto_select_ipus(cfg, 1)
+cfg = ipu.utils.auto_select_ipus(cfg, 1)
 
 
 # Handle CMD arguments
@@ -24,17 +24,16 @@ parser.add_argument('--replication-factor', type=int, default=2,
 opts = parser.parse_args()
 # Auto select as many IPUs as we want to replicate across
 # ...(must be a power of 2 - IPU driver MultiIPUs come only in powers of 2)
-cfg = ipu.utils.auto_select_ipus(cfg, opts.replication_factor)
+#cfg = ipu.utils.auto_select_ipus(cfg, opts.replication_factor)
 ipu.utils.configure_ipu_system(cfg)
+
 # Needed files
-#sys.path.insert(0,'../../scripts/tools_for_VAE/')
-#from tools_for_VAE import model_ipu
 import model_ipu
 from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 11
+batch_size = 8
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -87,15 +86,6 @@ with strategy.scope():
     if model_choice == 'full_prob':
         net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 
-
-    #### Loss definition
-    if model_choice == 'full_prob':
-        kl = sum(net.losses)
-        negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x) + kl *(-1+1/(batch_size))
-
-    else:
-        negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
-    
     #### Compile network
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-4), 
                 loss="mean_squared_error")
