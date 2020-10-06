@@ -106,7 +106,7 @@ strategy = ipu.ipu_strategy.IPUStrategy()
 #with ipu_scope("/device:IPU:0"):
 with strategy.scope():
     #### Model definition
-    model_choice = 'det'
+    model_choice = 'full_prob'
     # Fully deterministic model
     if model_choice == 'det':
         net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
