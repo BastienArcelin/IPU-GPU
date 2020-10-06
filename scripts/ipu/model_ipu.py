@@ -41,7 +41,7 @@ def get_posterior_fn():
           mean=-9.0, stddev=0.1)
       )
 # kernel divergence weight in loss
-kernel_divergence_fn=(lambda q, p, ignore: tfd.kl_divergence(q, p) / (512*32))
+kernel_divergence_fn=(lambda q, p, ignore: tfd.kl_divergence(q, p) / 8000) # 8000 = x_train.shape[0]
 
 def create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None):
     h = []
