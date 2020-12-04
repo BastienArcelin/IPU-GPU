@@ -62,7 +62,7 @@ y_val[:,2] = data_label[8000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
 
 #### Model definition
-model_choice = 'det'
+model_choice = 'full_prob'
 # Fully deterministic model
 if model_choice == 'det':
     net = model_gpu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -71,16 +71,7 @@ if model_choice == 'full_prob':
     net = model_gpu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
 
 
-#### Loss definition
-if model_choice == 'full_prob':
-    kl = sum(net.losses)
-    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x) + kl *(-1+1/(batch_size))
-
-else:
-    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
-
-
-net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
+net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-4), 
             loss="mean_squared_error")
 
 net.summary()

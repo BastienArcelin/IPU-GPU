@@ -56,6 +56,7 @@ def create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels
                                     kernel_posterior_fn=get_posterior_fn(),#ktied_distribution.get_ktied_posterior_fn(),
                                     kernel_divergence_fn = kernel_divergence_fn,
                                     activation=dense_activation))
-    model.add(tfp.layers.MultivariateNormalTriL(final_dim))
+    #model.add(tfp.layers.MultivariateNormalTriL(final_dim))
+    model.add(Dense(final_dim))
     model.build((None, 64,64,6))
     return model
