@@ -36,14 +36,14 @@ def create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels
     model = tf.keras.Sequential()
     model.add(BatchNormalization())
     for i in range(len(filters)):
-        model.add(tfp.layers.Convolution2DFlipout(filters[i], (kernels[i],kernels[i]), 
+        model.add(tfp.layers.Convolution2DReparameterization(filters[i], (kernels[i],kernels[i]), 
                                             kernel_posterior_fn=get_posterior_fn(),
                                             #kernel_posterior_fn=ktied_distribution.get_ktied_posterior_fn(),
                                             kernel_divergence_fn=kernel_divergence_fn,
                                             activation=conv_activation, 
                                             padding='same'))
         model.add(PReLU())
-        model.add(tfp.layers.Convolution2DFlipout(filters[i], (kernels[i],kernels[i]), 
+        model.add(tfp.layers.Convolution2DReparameterization(filters[i], (kernels[i],kernels[i]), 
                                             kernel_posterior_fn=get_posterior_fn(),
                                             #kernel_posterior_fn=ktied_distribution.get_ktied_posterior_fn(),
                                             kernel_divergence_fn=kernel_divergence_fn,
@@ -52,7 +52,7 @@ def create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels
                                             strides=(2,2)))
         model.add(PReLU())
     model.add(tf.keras.layers.Flatten())
-    model.add(tfp.layers.DenseFlipout(tfp.layers.MultivariateNormalTriL.params_size(final_dim),
+    model.add(tfp.layers.DenseReparameterization(tfp.layers.MultivariateNormalTriL.params_size(final_dim),
                                     kernel_posterior_fn=get_posterior_fn(),#ktied_distribution.get_ktied_posterior_fn(),
                                     kernel_divergence_fn = kernel_divergence_fn,
                                     activation=dense_activation))
