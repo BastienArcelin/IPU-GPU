@@ -19,7 +19,7 @@ for gpu in gpus:
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 8
+batch_size = 4
 print('The batchsize is : '+str(batch_size))
 
 input_shape = (64, 64, nb_of_bands)
@@ -66,7 +66,7 @@ validation_steps = int((10000-len(x_train))/batch_size)
 
 
 #### Model definition
-model_choice = 'full_prob'
+model_choice = 'det'
 # Fully deterministic model
 if model_choice == 'det':
     net = model_gpu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -83,7 +83,7 @@ time_c = time_callback()
 t_1 = time.time()
 hist = net.fit(x_train, y_train, 
                 batch_size = batch_size, 
-                epochs=220,
+                epochs=620,
                 steps_per_epoch=steps_per_epoch,
                 verbose=1,
                 shuffle=True,
@@ -96,4 +96,4 @@ print('training in '+str(t_2-t_1)+' seconds')
 net.summary()
 
 saving_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
-#net.save_weights(saving_path+'test')
+net.save_weights(saving_path+'test')
