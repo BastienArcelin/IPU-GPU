@@ -34,7 +34,7 @@ from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 1
-batch_size = 10
+batch_size = 6
 
 input_shape = (None,64, 64, nb_of_bands)
 hidden_dim = 256
