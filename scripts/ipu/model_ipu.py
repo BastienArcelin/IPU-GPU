@@ -21,8 +21,8 @@ def create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, fina
         h.append(PReLU())
     h.append(keras.layers.Flatten())
     h.append(Dense(tfp.layers.MultivariateNormalTriL.params_size(final_dim), activation=None))
-    h.append(Dense(final_dim))
-    #h.append(tfp.layers.MultivariateNormalTriL(final_dim))#
+    #h.append(Dense(final_dim))
+    h.append(tfp.layers.MultivariateNormalTriL(final_dim))#
     m = ipu.keras.Sequential(h)
 
     return m
@@ -67,9 +67,11 @@ def create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels
                                     kernel_posterior_fn=get_posterior_fn(),#ktied_distribution.get_ktied_posterior_fn(),
                                     kernel_divergence_fn = kernel_divergence_fn,
                                     activation=dense_activation))
-    #h.append(tfp.layers.MultivariateNormalTriL(final_dim)
-    h.append(Dense(final_dim))
+    h.append(tfp.layers.MultivariateNormalTriL(final_dim))
+    #h.append(Dense(final_dim))
     model = ipu.keras.Sequential(h)
-    model.build((None, 64,64,6))
+    #gradient_accumulation_count = 16
+    #model = ipu.keras.SequentialPipelineModel(h, gradient_accumulation_count=gradient_accumulation_count)
+    model.build(input_shape)
     
     return model
