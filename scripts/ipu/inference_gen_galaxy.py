@@ -66,7 +66,7 @@ with strategy.scope():
 
     ## Actual inference
     t0 = time.time()
-    samples = distribution.sample(100)
+    samples = distribution.sample(1000000)
     t1 = time.time()
 
 print('time for inference:' + str(t1-t0))

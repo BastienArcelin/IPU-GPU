@@ -106,7 +106,7 @@ strategy = ipu.ipu_strategy.IPUStrategy()
 #with ipu_scope("/device:IPU:0"):
 with strategy.scope():
     #### Model definition
-    model_choice = 'full_prob'
+    model_choice = 'det'
     # Fully deterministic model
     if model_choice == 'det':
         net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
@@ -119,7 +119,6 @@ with strategy.scope():
 
 # Load model weights
     net.load_weights('test')
-
     # Do inference
     ## In once
     # Warm up stage
@@ -129,6 +128,7 @@ with strategy.scope():
     print('warm up OK')
     # Prediction
     noise_data, y = get_dataset(only_features=True, size = 2000)
+    print(noise_data)
     t0 = time.time()
     out = net.predict(noise_data)
     t1 = time.time()
