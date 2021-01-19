@@ -62,7 +62,7 @@ y_val[:,2] = data_label[8000:]['redshift']
 y_val = tf.convert_to_tensor(y_val)
 
 #### Model definition
-model_choice = 'full_prob'
+model_choice = 'det'
 # Fully deterministic model
 if model_choice == 'det':
     net = model_gpu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)

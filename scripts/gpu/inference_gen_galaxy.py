@@ -38,7 +38,7 @@ model.compile(optimizer=tf.optimizers.Adam(), loss=lambda _, log_prob: -log_prob
 print('flow defined')
 
 ## Load weights
-loading_path = '../../../nflow_weights/'
+loading_path = '../../nflow_weights/'
 latest = tf.train.latest_checkpoint(loading_path)
 model.load_weights(latest)
 
@@ -49,7 +49,7 @@ print('warm-up over')
 
 ## Actual inference
 t0 = time.time()
-samples = distribution.sample(100000)
+samples = distribution.sample(1000000)
 t1 = time.time()
 
 print('time for inference:' + str(t1-t0))
