@@ -48,15 +48,15 @@ vae_lsst_conv,vae_lsst_utils, encoder_LSST, decoder_LSST, Dkl = utils_vae.load_v
 
 ### Do inference
 ## Warm-up 
-samples = distribution.sample(1000)
+samples = distribution.sample(100)
 out = decoder_LSST(samples)
 print('warm-up over')
 
-del samples
-del out
+n_gal = 500
+print(n_gal)
 ## Actual inference
 t0 = time.time()
-samples = distribution.sample(5000)
+samples = distribution.sample(n_gal)
 out = decoder_LSST(samples)
 t1 = time.time()
 

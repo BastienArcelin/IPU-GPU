@@ -84,9 +84,12 @@ net.load_weights(latest)
 print('weights loaded')
 
 ### Do inference
+## Warm-up
+out = net.predict(x_val, batch_size=64)
+print('warm-up done')
 ## In once
 t0 = time.time()
-out = net(x_val)
+out = net.predict(x_val, batch_size=64)
 t1 = time.time()
 
 ## One by one
@@ -99,6 +102,7 @@ t1 = time.time()
 # out = np.array(out)
 
 print('prediction done in: '+str(t1-t0)+' seconds')
+print(out.shape)
 
 ### Plot results
 fig = plt.figure()
