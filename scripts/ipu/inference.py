@@ -20,8 +20,6 @@ cfg = ipu.utils.auto_select_ipus(cfg, 1)
 ipu.utils.configure_ipu_system(cfg)
 
 # Needed files
-#sys.path.insert(0,'../../scripts/tools_for_VAE/')
-#from tools_for_VAE import generator, model_ipu
 import generator
 import model_ipu
 
@@ -98,7 +96,7 @@ def get_dataset(only_features=False, size = 2000):
         ds = ds.map(lambda d, l:
                     (tf.cast(d, tf.float32), tf.cast(l, tf.float32)))
     ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
-    return ds, y_train
+    return x_train, y_train
 
 # IPU
 # Create an IPU distribution strategy
@@ -122,30 +120,19 @@ with strategy.scope():
     # Do inference
     ## In once
     # Warm up stage
-    noise_data, y = get_dataset(only_features=True, size = 8)
-    print(noise_data)
-    net.predict(noise_data, steps_per_run = 1)
+    noise_data, y = get_dataset(only_features=True)
+    print(noise_data.shape)
+    t_0 = time.time()
+    #net.predict(noise_data, steps_per_run = 1)
+    net.predict(noise_data, batch_size = 40)
+    print('warm up time: '+str(time.time()-t_0))
     print('warm up OK')
     # Prediction
-    noise_data, y = get_dataset(only_features=True, size = 2000)
-    print(noise_data)
+    print(noise_data.shape)
     t0 = time.time()
-    out = net.predict(noise_data)
+    out = net.predict(noise_data, batch_size = 40)
     t1 = time.time()
     
-    ## One by one
-    # out_res = []
-    # out_label = []
-    # noise_data, y = get_dataset(only_features=True)
-    # for i in range (11):
-    #     print(i)
-    #     if i ==1:
-    #         t0 = time.time()
-    #     out_label.append(y)
-    #     out = net.predict(noise_data)
-    #     out_res.append(out)
-    #     print(out, y)
-    # t1 = time.time()
     print('prediction ok, time: '+str(t1-t0))
     #print(out_res)
 

@@ -12,6 +12,7 @@ import time
 import sys
 sys.path.insert(0,'')
 from flow import *
+import utils_vae
 
 # IPU 
 from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
@@ -59,14 +60,20 @@ with strategy.scope():
     latest = tf.train.latest_checkpoint(loading_path)
     model.load_weights(latest)
 
+    ## Define VAE and load weights decoder VAE
+    vae_lsst_conv,vae_lsst_utils, encoder_LSST, decoder_LSST, Dkl = utils_vae.load_vae_full('../../vae_weights/weights_mse_noisy_v4.513-0.00.ckpt',6, folder= False)
+
     ### Do inference
     ## Warm-up 
     samples = distribution.sample(1000)
+    out = decoder_LSST(samples)
     print('warm-up over')
-
+    n_gal = 500
+    print(n_gal)
     ## Actual inference
     t0 = time.time()
-    samples = distribution.sample(1000000)
+    samples = distribution.sample(n_gal)
+    out = decoder_LSST(samples)
     t1 = time.time()
 
 print('time for inference:' + str(t1-t0))
