@@ -12,6 +12,7 @@ import time
 import sys
 sys.path.insert(0,'')
 from flow import *
+import utils_vae
 
 ## Define the normalizing flow
 hidden_dim = [256,256]
@@ -37,19 +38,26 @@ model = tfk.Model(x_, log_prob_)
 model.compile(optimizer=tf.optimizers.Adam(), loss=lambda _, log_prob: -log_prob)
 print('flow defined')
 
-## Load weights
+## Load weights normalizing flow
 loading_path = '../../nflow_weights/'
 latest = tf.train.latest_checkpoint(loading_path)
 model.load_weights(latest)
 
+## Define VAE and load weights decoder VAE
+vae_lsst_conv,vae_lsst_utils, encoder_LSST, decoder_LSST, Dkl = utils_vae.load_vae_full('../../vae_weights/',6, folder= True)
+
 ### Do inference
 ## Warm-up 
 samples = distribution.sample(1000)
+out = decoder_LSST(samples)
 print('warm-up over')
 
+del samples
+del out
 ## Actual inference
 t0 = time.time()
-samples = distribution.sample(1000000)
+samples = distribution.sample(5000)
+out = decoder_LSST(samples)
 t1 = time.time()
 
 print('time for inference:' + str(t1-t0))

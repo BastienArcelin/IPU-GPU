@@ -1,0 +1,2 @@
+model_checkpoint_path: "/sps/lsst/users/barcelin/weights/LSST/VAE/noisy/v_2/v1/bis_bis_bis/mse/weights_mse_noisy_v4.513-0.00.ckpt"
+all_model_checkpoint_paths: "/sps/lsst/users/barcelin/weights/LSST/VAE/noisy/v_2/v1/bis_bis_bis/mse/weights_mse_noisy_v4.513-0.00.ckpt"
