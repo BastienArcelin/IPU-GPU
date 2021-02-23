@@ -21,7 +21,7 @@ for gpu in gpus:
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 8
+batch_size = 12
 print('The batchsize is : '+str(batch_size))
 
 input_shape = (64, 64, nb_of_bands)
@@ -85,11 +85,11 @@ print('weights loaded')
 
 ### Do inference
 ## Warm-up
-out = net.predict(x_val, batch_size=64)
+out = net.predict(x_val[:100], batch_size=batch_size)
 print('warm-up done')
 ## In once
 t0 = time.time()
-out = net.predict(x_val, batch_size=64)
+out = net.predict(x_val, batch_size=batch_size)
 t1 = time.time()
 
 ## One by one
