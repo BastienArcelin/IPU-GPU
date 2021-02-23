@@ -3,14 +3,25 @@
 ## Performances comparison IPU (Graphcore - [Azure IPU Preview](https://www.graphcore.ai/posts/microsoft-and-graphcore-collaborate-to-accelerate-artificial-intelligence)) vs GPU (V100)
 The images availables [here](https://zenodo.org/record/3759206#.X3SAsdbgqjh) are generated with [GalSim](https://github.com/GalSim-developers/GalSim) ([doc](http://galsim-developers.github.io/GalSim/_build/html/index.html)) from parametric models fitted to real galaxies from the HST COSMOS catalog (which can be found from [here](https://github.com/GalSim-developers/GalSim/wiki/RealGalaxy%20Data)).
 
-### classical deep neural network : training and inference
+#### classical deep neural network : training
 Trained on 10 000 images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 14 due to IPU memory constraint.
 <p align="center">
-  <img src="/img/training_time.png" title="field_image">
+  <img src="/img/training_time_det.pdf" title="field_image">
 </p>
 
 
-### Bayesian deep neaural network : training and inference
+#### Bayesian deep neaural network : training
+Trained on 10 000 images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 14 due to IPU memory constraint.
+<p align="center">
+  <img src="/img/training_time_BNN.pdf" title="field_image">
+</p>
+
+#### Galaxy image generation using a trained VAE decoder: inference
+Generation of images of size (6,64,64) using a trained VAE decoder. The latent space is sampled using normalizing flows network.
+<p align="center">
+  <img src="/img/inference_time_generation.pdf" title="field_image">
+</p>
+
 
 ## Installation
 1. Clone the repository
