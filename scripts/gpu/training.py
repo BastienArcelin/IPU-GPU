@@ -100,5 +100,5 @@ t_2 = time.time()
 print('training in '+str(t_2-t_1)+' seconds')
 net.summary()
 
-saving_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
-net.save_weights(saving_path+'test')
+#saving_path = '/sps/lsst/users/barcelin/weights/gpu_benchmark/'
+#net.save_weights(saving_path+'test')
