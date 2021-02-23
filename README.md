@@ -10,8 +10,8 @@ Trained on 10 000 images composed of 6 LSST filters. The size of each image is (
 </p>
 
 
-#### Bayesian deep neaural network : training
-Trained on 10 000 images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 14 due to IPU memory constraint.
+#### Bayesian deep neural network : training
+Trained on 10 000 images composed of 6 LSST filters. The size of each image is (6,64,64). The training were performed only until a batch size of 8 due to IPU memory constraint.
 <p align="center">
   <img src="/img/training_time_BNN.png" title="field_image" width="75%" height="75%">
 </p>
