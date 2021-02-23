@@ -52,7 +52,7 @@ samples = distribution.sample(100)
 out = decoder_LSST(samples)
 print('warm-up over')
 
-n_gal = 500
+n_gal = 1000
 print(n_gal)
 ## Actual inference
 t0 = time.time()
