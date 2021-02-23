@@ -25,7 +25,7 @@ import model_ipu
 
 ######## Parameters
 nb_of_bands = 6
-batch_size = 1
+batch_size = 2
 
 input_shape = (64, 64, nb_of_bands)
 hidden_dim = 256
@@ -53,29 +53,6 @@ list_of_samples_data = [x for x in listdir_fullpath(data_dir) if x.endswith('.cs
 print(list_of_samples)
 
 ###### Generator
-test_generator = generator.BatchGenerator(bands, list_of_samples, total_sample_size=None,
-                                    batch_size=batch_size, 
-                                    trainval_or_test='test',
-                                    do_norm=False,
-                                    denorm = False,
-                                    list_of_weights_e=None)
-
-def test_batch_generator():
-    multi_enqueuer = keras.utils.OrderedEnqueuer(test_generator,
-                                                    use_multiprocessing=False)
-    multi_enqueuer.start(workers=10, max_queue_size=10)
-    while True:
-        batch_x, batch_y = next(multi_enqueuer.get())
-        yield batch_x, batch_y
-
-# Recommended to specify the expected output shapes and types here
-output_types = (tf.float32, tf.float32)
-output_shapes = (tf.TensorShape([batch_size, 64, 64, nb_of_bands]),
-                    tf.TensorShape([batch_size, 3]))
-test_ds = tf.data.Dataset.from_generator(test_batch_generator,
-                                            output_types=output_types,
-                                            output_shapes=output_shapes).repeat()
-
 def get_dataset(only_features=False, size = 2000):
     #x_train, y_train  = next(iter(test_ds))
     data = np.load(list_of_samples[0], mmap_mode = 'c')
@@ -88,15 +65,17 @@ def get_dataset(only_features=False, size = 2000):
     y_train = tf.convert_to_tensor(y_train)
 
     if only_features:
-        ds = tf.data.Dataset.from_tensor_slices((x_train)).batch(batch_size, drop_remainder=True)
+        ds = tf.data.Dataset.from_tensor_slices((x_train)).batch(batch_size, drop_remainder=True).repeat()
         ds = ds.map(lambda d:
                     (tf.cast(d, tf.float32)))
+        return ds, y_train
     else:
         ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(batch_size, drop_remainder=True).repeat()
         ds = ds.map(lambda d, l:
                     (tf.cast(d, tf.float32), tf.cast(l, tf.float32)))
-    ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
-    return x_train, y_train
+        ds = ds.cache().prefetch(tf.data.experimental.AUTOTUNE)
+        return ds, y_train
+
 
 # IPU
 # Create an IPU distribution strategy
@@ -115,26 +94,27 @@ with strategy.scope():
     net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
                 loss="mean_squared_error")
 
-# Load model weights
+    # Load model weights
     net.load_weights('test')
+
+    # Load data
+    noise_data, y = get_dataset(only_features=True, size = batch_size)
+    print(noise_data)
+
     # Do inference
-    ## In once
     # Warm up stage
-    noise_data, y = get_dataset(only_features=True)
-    print(noise_data.shape)
+    print("warm up starts")
     t_0 = time.time()
-    #net.predict(noise_data, steps_per_run = 1)
-    net.predict(noise_data, batch_size = 40)
+    net.predict(noise_data, steps = int(2000/batch_size))
     print('warm up time: '+str(time.time()-t_0))
-    print('warm up OK')
+
     # Prediction
-    print(noise_data.shape)
+    print('prediction starts')
     t0 = time.time()
-    out = net.predict(noise_data, batch_size = 40)
+    out = net.predict(noise_data, steps = int(2000/batch_size))
     t1 = time.time()
-    
-    print('prediction ok, time: '+str(t1-t0))
-    #print(out_res)
+
+print('prediction time: '+str(t1-t0))
 
 
 #### Plots

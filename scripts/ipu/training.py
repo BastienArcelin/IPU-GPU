@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import time
 import tensorflow as tf
+import tensorflow.keras.backend as K
 
 # IPU 
 from tensorflow.compiler.plugin.poplar.ops import gen_ipu_ops
@@ -34,7 +35,7 @@ from callbacks import time_callback
 
 ######## Parameters
 nb_of_bands = 1
-batch_size = 6
+batch_size = 12
 
 input_shape = (None,64, 64, nb_of_bands)
 hidden_dim = 256
@@ -42,7 +43,6 @@ latent_dim = 32
 final_dim = 3
 filters = [32, 64, 128, 256]
 kernels = [3,3,3,3]
-bands = [6]#[4,5,6,7,8,9]
 
 conv_activation = None
 dense_activation = None
@@ -83,21 +83,30 @@ with strategy.scope():
     # Fully deterministic model
     if model_choice == 'det':
         net = model_ipu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+        negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
     # Full probabilistic model
     if model_choice == 'full_prob':
         net = model_ipu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+        kl = sum(net.losses)
+        alpha = K.variable(0.5)
+        negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)+ kl *(K.get_value(alpha)-1)
 
     net.summary()
     #### Compile network
-    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
-    net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
-                loss="mean_squared_error")#negative_log_likelihood)#
+    #net.load_weights('test')
+    # Custom metrics
+    def kl_metric(y_true, y_pred):
+        return K.sum(net.losses)
+    
+    net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-4), 
+                loss=negative_log_likelihood,
+                metrics=['acc',kl_metric])#negative_log_likelihood)#"mean_squared_error"
 
     ds_train, steps_per_epoch = create_dataset(batch_size)
     time_c = time_callback()
 ######## Train the network
     t_1 = time.time()
-    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=120, verbose = 1, callbacks = [time_c])
+    hist = net.fit(ds_train, steps_per_epoch=steps_per_epoch, epochs=1200, verbose = 1, callbacks = [time_c])
     t_2 = time.time()
 
     print('training took '+str(t_2-t_1)+' seconds')
