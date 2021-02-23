@@ -70,12 +70,17 @@ model_choice = 'det'
 # Fully deterministic model
 if model_choice == 'det':
     net = model_gpu.create_model_det(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)
 # Full probabilistic model
 if model_choice == 'full_prob':
     net = model_gpu.create_model_full_prob(input_shape, latent_dim, hidden_dim, filters, kernels, final_dim, conv_activation=None, dense_activation=None)
+    kl = sum(net.losses)
+    alpha = K.variable(0.)
+    negative_log_likelihood = lambda x, rv_x: -rv_x.log_prob(x)+ kl *(K.get_value(alpha)-1)
+
 
 net.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-3), 
-            loss="mean_squared_error")
+            loss=negative_log_likelihood)#"mean_squared_error"
 
 ## Callbacks 
 time_c = time_callback()
